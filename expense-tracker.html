@@ -235,10 +235,133 @@
   }
   .toast.show { transform: translateX(-50%) translateY(0); }
 
+  /* Settings button */
+  .settings-btn {
+    position: absolute; right: 16px; top: 50%;
+    transform: translateY(-50%);
+    background: rgba(255,255,255,0.2); border: none;
+    color: white; width: 36px; height: 36px;
+    border-radius: 10px; font-size: 1.1rem;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    transition: background 0.2s;
+  }
+  .settings-btn:hover { background: rgba(255,255,255,0.35); }
+  header { position: relative; }
+
+  /* Modal */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.5); z-index: 2000;
+    align-items: center; justify-content: center;
+    padding: 20px;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: white; border-radius: 16px;
+    padding: 24px; width: 100%; max-width: 420px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  }
+  .modal h3 { font-size: 1rem; margin-bottom: 16px; }
+  .modal p { font-size: 0.82rem; color: #718096; margin-bottom: 12px; line-height: 1.5; }
+  .modal input {
+    width: 100%; padding: 10px 12px;
+    border: 2px solid #e2e8f0; border-radius: 8px;
+    font-size: 0.9rem; font-family: inherit;
+    outline: none; margin-bottom: 12px;
+  }
+  .modal input:focus { border-color: #667eea; }
+  .modal-btns { display: flex; gap: 10px; }
+  .modal-btns button {
+    flex: 1; padding: 10px; border: none; border-radius: 8px;
+    font-size: 0.9rem; font-weight: 600; cursor: pointer;
+  }
+  .btn-save { background: linear-gradient(135deg, #667eea, #764ba2); color: white; }
+  .btn-cancel { background: #edf2f7; color: #4a5568; }
+
+  /* Chat */
+  .chat-wrap {
+    background: white; border-radius: 14px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+    display: flex; flex-direction: column;
+    height: 500px; overflow: hidden;
+  }
+  .chat-messages {
+    flex: 1; overflow-y: auto; padding: 16px;
+    display: flex; flex-direction: column; gap: 12px;
+  }
+  .chat-hint {
+    text-align: center; color: #a0aec0; font-size: 0.85rem;
+    padding: 30px 20px; line-height: 1.8;
+  }
+  .chat-hint strong { color: #667eea; }
+  .msg { display: flex; gap: 8px; }
+  .msg.user { flex-direction: row-reverse; }
+  .msg-bubble {
+    max-width: 80%; padding: 10px 14px;
+    border-radius: 14px; font-size: 0.88rem; line-height: 1.5;
+  }
+  .msg.user .msg-bubble { background: linear-gradient(135deg, #667eea, #764ba2); color: white; border-radius: 14px 14px 4px 14px; }
+  .msg.ai .msg-bubble { background: #f7fafc; color: #2d3748; border-radius: 14px 14px 14px 4px; border: 1px solid #e2e8f0; }
+  .msg-avatar { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; background: #edf2f7; }
+
+  /* Confirm card */
+  .confirm-card {
+    border: 2px solid #e2e8f0; border-radius: 12px;
+    padding: 14px; margin-top: 8px; background: white;
+  }
+  .confirm-card .cf-row { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 0.85rem; }
+  .confirm-card .cf-label { color: #718096; }
+  .confirm-card .cf-val { font-weight: 600; }
+  .confirm-card .cf-amount { font-size: 1.1rem; font-weight: 700; }
+  .confirm-card .cf-amount.income { color: #38a169; }
+  .confirm-card .cf-amount.expense { color: #e53e3e; }
+  .confirm-btns { display: flex; gap: 8px; margin-top: 12px; }
+  .confirm-btns button {
+    flex: 1; padding: 9px; border: none; border-radius: 8px;
+    font-size: 0.85rem; font-weight: 600; cursor: pointer;
+  }
+  .btn-confirm { background: #38a169; color: white; }
+  .btn-edit-chat { background: #edf2f7; color: #4a5568; }
+
+  /* Chat input */
+  .chat-input-row {
+    padding: 12px; border-top: 1px solid #e2e8f0;
+    display: flex; gap: 8px; align-items: flex-end;
+  }
+  .chat-input-row textarea {
+    flex: 1; padding: 10px 12px;
+    border: 2px solid #e2e8f0; border-radius: 10px;
+    font-size: 0.9rem; font-family: inherit;
+    resize: none; outline: none; min-height: 42px; max-height: 120px;
+    transition: border-color 0.2s;
+  }
+  .chat-input-row textarea:focus { border-color: #667eea; }
+  .btn-send {
+    width: 42px; height: 42px; border: none;
+    border-radius: 10px; background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white; font-size: 1.1rem; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; transition: opacity 0.2s;
+  }
+  .btn-send:disabled { opacity: 0.5; }
+  .no-key-banner {
+    background: #fffaf0; border: 1px solid #f6ad55;
+    border-radius: 10px; padding: 12px 14px;
+    font-size: 0.82rem; color: #744210; margin-bottom: 12px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .no-key-banner button {
+    margin-left: auto; padding: 4px 12px;
+    border: none; border-radius: 6px;
+    background: #f6ad55; color: white;
+    font-size: 0.8rem; font-weight: 600; cursor: pointer;
+  }
+
   @media (max-width: 580px) {
     .summary-grid { grid-template-columns: 1fr; }
     .form-grid { grid-template-columns: 1fr; }
     .charts-grid { grid-template-columns: 1fr; }
+    .chat-wrap { height: calc(100vh - 320px); min-height: 350px; }
   }
 </style>
 </head>
@@ -247,7 +370,21 @@
 <header>
   <h1>💰 บัญชีรายรับรายจ่าย</h1>
   <p>จัดการการเงินส่วนตัวได้ง่ายๆ</p>
+  <button class="settings-btn" onclick="openSettings()" title="ตั้งค่า API Key">⚙️</button>
 </header>
+
+<!-- Settings Modal -->
+<div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)closeSettings()">
+  <div class="modal">
+    <h3>⚙️ ตั้งค่า Claude API Key</h3>
+    <p>ใส่ Anthropic API Key เพื่อใช้ฟีเจอร์แชท AI<br>Key จะเก็บในเครื่องเท่านั้น ไม่ได้ส่งออกไปที่ไหนนอกจาก Anthropic</p>
+    <input type="password" id="apiKeyInput" placeholder="sk-ant-api03-..." autocomplete="off">
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeSettings()">ยกเลิก</button>
+      <button class="btn-save" onclick="saveApiKey()">บันทึก</button>
+    </div>
+  </div>
+</div>
 
 <div class="container">
 
@@ -270,6 +407,7 @@
   <!-- Tabs -->
   <div class="tabs">
     <button class="tab-btn active" onclick="switchTab('add')">➕ บันทึก</button>
+    <button class="tab-btn" onclick="switchTab('chat')">💬 AI</button>
     <button class="tab-btn" onclick="switchTab('chart')">📊 กราฟ</button>
     <button class="tab-btn" onclick="switchTab('history')">📋 ประวัติ</button>
   </div>
@@ -301,6 +439,32 @@
         </div>
       </div>
       <button class="btn-submit" onclick="addEntry()">บันทึกรายการ</button>
+    </div>
+  </div>
+
+  <!-- Panel: Chat AI -->
+  <div class="panel" id="panel-chat">
+    <div id="noKeyBanner" class="no-key-banner" style="display:none">
+      ⚠️ ยังไม่ได้ตั้งค่า API Key
+      <button onclick="openSettings()">ตั้งค่า</button>
+    </div>
+    <div class="chat-wrap">
+      <div class="chat-messages" id="chatMessages">
+        <div class="chat-hint">
+          <div style="font-size:2rem;margin-bottom:10px">🤖</div>
+          พิมพ์รายการที่ต้องการบันทึก เช่น<br>
+          <strong>"กินข้าวกลางวัน 80 บาท"</strong><br>
+          <strong>"รับเงินเดือน 25000"</strong><br>
+          <strong>"ค่าไฟเดือนนี้ 450 บาท"</strong><br>
+          <strong>"ซื้อครีม 350 เมื่อวาน"</strong>
+        </div>
+      </div>
+      <div class="chat-input-row">
+        <textarea id="chatInput" placeholder="พิมพ์รายการ..." rows="1"
+          onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat()}"
+          oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"></textarea>
+        <button class="btn-send" id="btnSend" onclick="sendChat()">➤</button>
+      </div>
     </div>
   </div>
 
@@ -550,12 +714,178 @@ function renderPieIncomeChart() {
 // ---- Tabs ----
 function switchTab(tab) {
   document.querySelectorAll('.tab-btn').forEach((b, i) => {
-    b.classList.toggle('active', ['add','chart','history'][i] === tab);
+    b.classList.toggle('active', ['add','chat','chart','history'][i] === tab);
   });
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
   document.getElementById('panel-' + tab).classList.add('active');
   if (tab === 'chart') renderCharts();
+  if (tab === 'chat') checkApiKeyBanner();
 }
+
+// ---- API Key ----
+function getApiKey() { return localStorage.getItem('anthropic_api_key') || ''; }
+function openSettings() {
+  document.getElementById('apiKeyInput').value = getApiKey();
+  document.getElementById('modalOverlay').classList.add('open');
+}
+function closeSettings() { document.getElementById('modalOverlay').classList.remove('open'); }
+function saveApiKey() {
+  const key = document.getElementById('apiKeyInput').value.trim();
+  localStorage.setItem('anthropic_api_key', key);
+  closeSettings();
+  checkApiKeyBanner();
+  showToast('✅ บันทึก API Key แล้ว');
+}
+function checkApiKeyBanner() {
+  document.getElementById('noKeyBanner').style.display = getApiKey() ? 'none' : 'flex';
+}
+
+// ---- Chat AI ----
+let chatLoading = false;
+
+async function sendChat() {
+  if (chatLoading) return;
+  const input = document.getElementById('chatInput');
+  const text = input.value.trim();
+  if (!text) return;
+  const apiKey = getApiKey();
+  if (!apiKey) { openSettings(); return; }
+
+  addChatMsg('user', text);
+  input.value = '';
+  input.style.height = 'auto';
+
+  chatLoading = true;
+  document.getElementById('btnSend').disabled = true;
+  const loadingId = addChatMsg('ai', '⏳ กำลังคิด...');
+
+  try {
+    const today = new Date().toISOString().slice(0, 10);
+    const result = await callClaude(apiKey, text, today);
+    removeMsg(loadingId);
+    showConfirmCard(result, text);
+  } catch (err) {
+    removeMsg(loadingId);
+    addChatMsg('ai', '❌ เกิดข้อผิดพลาด: ' + (err.message || 'ลองใหม่อีกครั้ง'));
+  } finally {
+    chatLoading = false;
+    document.getElementById('btnSend').disabled = false;
+  }
+}
+
+async function callClaude(apiKey, userText, today) {
+  const systemPrompt = `คุณเป็นผู้ช่วยบัญชีส่วนตัว วันนี้คือ ${today}
+ดึงข้อมูลธุรกรรมจากข้อความภาษาไทยหรืออังกฤษ
+หมวดหมู่รายรับ: เงินเดือน, ธุรกิจ, ลงทุน, ฟรีแลนซ์, ของขวัญ, อื่นๆ (รับ)
+หมวดหมู่รายจ่าย: อาหาร, เดินทาง, ที่พัก, สาธารณูปโภค, สุขภาพ, ความงาม, บันเทิง, ช้อปปิ้ง, การศึกษา, ประกัน, อื่นๆ
+ต้องระบุหมวดหมู่จากรายการข้างต้นเท่านั้น ห้ามสร้างหมวดหมู่ใหม่`;
+
+  const resp = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-calls': 'true'
+    },
+    body: JSON.stringify({
+      model: 'claude-opus-4-6',
+      max_tokens: 512,
+      system: systemPrompt,
+      messages: [{ role: 'user', content: userText }],
+      output_config: {
+        format: {
+          type: 'json_schema',
+          schema: {
+            type: 'object',
+            properties: {
+              type: { type: 'string', enum: ['income', 'expense'] },
+              amount: { type: 'number' },
+              category: { type: 'string' },
+              date: { type: 'string' },
+              description: { type: 'string' }
+            },
+            required: ['type', 'amount', 'category', 'date', 'description'],
+            additionalProperties: false
+          }
+        }
+      }
+    })
+  });
+
+  if (!resp.ok) {
+    const err = await resp.json().catch(() => ({}));
+    if (resp.status === 401) throw new Error('API Key ไม่ถูกต้อง กรุณาตรวจสอบ');
+    throw new Error(err?.error?.message || `HTTP ${resp.status}`);
+  }
+
+  const data = await resp.json();
+  return JSON.parse(data.content[0].text);
+}
+
+function showConfirmCard(result, originalText) {
+  const id = 'cf_' + Date.now();
+  const typeLabel = result.type === 'income' ? '💚 รายรับ' : '❤️ รายจ่าย';
+  const amountClass = result.type === 'income' ? 'income' : 'expense';
+  const sign = result.type === 'income' ? '+' : '-';
+  const thDate = formatDate(result.date);
+
+  const html = `
+    <div class="confirm-card" id="${id}">
+      <div class="cf-row"><span class="cf-label">ประเภท</span><span class="cf-val">${typeLabel}</span></div>
+      <div class="cf-row"><span class="cf-label">จำนวน</span><span class="cf-val cf-amount ${amountClass}">${sign}฿${fmt(result.amount)}</span></div>
+      <div class="cf-row"><span class="cf-label">หมวดหมู่</span><span class="cf-val">${CAT_ICONS[result.category]||''} ${esc(result.category)}</span></div>
+      <div class="cf-row"><span class="cf-label">วันที่</span><span class="cf-val">${thDate}</span></div>
+      <div class="cf-row"><span class="cf-label">รายละเอียด</span><span class="cf-val">${esc(result.description)}</span></div>
+      <div class="confirm-btns">
+        <button class="btn-confirm" onclick="confirmEntry(${JSON.stringify(result).replace(/"/g,'&quot;')}, '${id}')">✅ บันทึก</button>
+        <button class="btn-edit-chat" onclick="document.getElementById('${id}').remove()">✏️ ยกเลิก</button>
+      </div>
+    </div>`;
+
+  addChatMsg('ai', `ดึงข้อมูลได้แล้วค่ะ ✨`, html);
+}
+
+function confirmEntry(result, cardId) {
+  entries.push({
+    id: Date.now(),
+    type: result.type,
+    amount: result.amount,
+    date: result.date,
+    category: result.category,
+    desc: result.description
+  });
+  save();
+  updateSummary();
+  renderHistory();
+  if (chartBar) renderCharts();
+  document.getElementById(cardId)?.remove();
+  addChatMsg('ai', '✅ บันทึกแล้ว! มีรายการอื่นอีกไหมคะ? 😊');
+  showToast('✅ บันทึกรายการแล้ว');
+}
+
+let msgCounter = 0;
+function addChatMsg(role, text, extraHtml = '') {
+  const id = 'msg_' + (++msgCounter);
+  const avatar = role === 'user' ? '👤' : '🤖';
+  const el = document.createElement('div');
+  el.className = 'msg ' + role;
+  el.id = id;
+  el.innerHTML = `
+    <div class="msg-avatar">${avatar}</div>
+    <div>
+      <div class="msg-bubble">${esc(text)}</div>
+      ${extraHtml}
+    </div>`;
+  const container = document.getElementById('chatMessages');
+  // Remove hint on first message
+  const hint = container.querySelector('.chat-hint');
+  if (hint) hint.remove();
+  container.appendChild(el);
+  container.scrollTop = container.scrollHeight;
+  return id;
+}
+function removeMsg(id) { document.getElementById(id)?.remove(); }
 
 // ---- Helpers ----
 function save() { localStorage.setItem('expense_entries', JSON.stringify(entries)); }
