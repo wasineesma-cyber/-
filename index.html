@@ -1,0 +1,1078 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#121212">
+<title>ROAR MONEY</title>
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root {
+  --bg: #121212;
+  --surface: #1e1e1e;
+  --surface2: #262626;
+  --accent: #d4af37;
+  --accent2: #f1d592;
+  --accent-dark: #aa771c;
+  --income: #27ae60;
+  --expense: #e74c3c;
+  --border: #2e2e2e;
+  --text: #e0e0e0;
+  --muted: #888;
+  --nav-h: 64px;
+}
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+html,body { height:100%; background:var(--bg); color:var(--text); font-family:'Segoe UI',Tahoma,sans-serif; }
+body { padding-bottom:var(--nav-h); }
+
+/* ── HEADER ── */
+.header {
+  background: linear-gradient(135deg,#1c1800,#2a2200);
+  border-bottom:1px solid var(--accent-dark);
+  padding:14px 18px calc(14px + env(safe-area-inset-top));
+  display:flex; align-items:center; gap:10px;
+}
+.header-logo { font-size:1.5rem; }
+.header-title { flex:1; }
+.header-title h1 { font-size:1.1rem; font-weight:900; color:var(--accent); letter-spacing:.06em; }
+.header-title p  { font-size:.7rem; color:var(--muted); margin-top:1px; letter-spacing:.04em; }
+.icon-btn {
+  background:var(--surface2); border:1px solid var(--border);
+  color:var(--muted); width:34px; height:34px; border-radius:10px;
+  font-size:.95rem; cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  transition:all .2s;
+}
+.icon-btn:hover { border-color:var(--accent); color:var(--accent); }
+
+/* LINE profile chip */
+#lineProfile { display:none; align-items:center; gap:6px;
+  background:var(--surface2); border:1px solid var(--border);
+  padding:4px 10px; border-radius:20px; }
+#lineProfile.show { display:flex; }
+#lineProfile img { width:22px; height:22px; border-radius:50%; }
+#lineProfile span { font-size:.72rem; color:var(--text); max-width:80px;
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+/* ── BOTTOM NAV ── */
+.bottom-nav {
+  position:fixed; bottom:0; left:0; right:0; height:var(--nav-h);
+  background:var(--surface); border-top:1px solid var(--border);
+  display:grid; grid-template-columns:repeat(5,1fr);
+  padding-bottom:env(safe-area-inset-bottom);
+  z-index:100;
+}
+.nav-btn {
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:3px; background:none; border:none; cursor:pointer;
+  color:var(--muted); font-size:.62rem; font-weight:600;
+  letter-spacing:.03em; transition:color .2s;
+}
+.nav-btn .nav-icon { font-size:1.2rem; }
+.nav-btn.active { color:var(--accent); }
+
+/* ── PANELS ── */
+.panel { display:none; padding:16px 14px; max-width:560px; margin:0 auto; }
+.panel.active { display:block; }
+
+/* ── CARDS ── */
+.card {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:18px; padding:18px; margin-bottom:14px;
+}
+.section-label {
+  font-size:.7rem; font-weight:700; color:var(--muted);
+  text-transform:uppercase; letter-spacing:.07em; margin-bottom:12px;
+}
+
+/* ── SUMMARY TOP ── */
+.sum-balance {
+  text-align:center; padding:8px 0 18px;
+}
+.sum-balance .bal-label { font-size:.72rem; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; }
+.sum-balance .bal-amount {
+  font-size:2.6rem; font-weight:900; color:var(--accent);
+  line-height:1.1; margin:6px 0 4px;
+}
+.sum-balance .bal-period {
+  display:inline-flex; align-items:center; gap:6px;
+  background:var(--surface2); border:1px solid var(--border);
+  border-radius:20px; padding:4px 12px;
+  font-size:.75rem; cursor:pointer; color:var(--text);
+}
+.sum-two { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px; }
+.sum-card {
+  border-radius:14px; padding:14px 12px;
+  cursor:pointer; border:2px solid transparent; transition:border-color .2s;
+}
+.sum-card.inc { background:#0d2018; }
+.sum-card.exp { background:#200d0d; }
+.sum-card.active-tab.inc { border-color:var(--income); }
+.sum-card.active-tab.exp { border-color:var(--expense); }
+.sum-card .sc-label { font-size:.68rem; text-transform:uppercase; letter-spacing:.06em; margin-bottom:6px; }
+.sum-card.inc .sc-label { color:var(--income); }
+.sum-card.exp .sc-label { color:var(--expense); }
+.sum-card .sc-amount { font-size:1.3rem; font-weight:800; }
+.sum-card.inc .sc-amount { color:var(--income); }
+.sum-card.exp .sc-amount { color:var(--expense); }
+
+/* ── CATEGORY LIST ── */
+.cat-section-title {
+  font-size:.8rem; font-weight:700; color:var(--accent);
+  text-transform:uppercase; letter-spacing:.05em;
+  margin:4px 0 12px;
+}
+.cat-item { margin-bottom:14px; }
+.cat-item-header {
+  display:flex; justify-content:space-between;
+  font-size:.85rem; margin-bottom:5px;
+}
+.cat-item-name { display:flex; align-items:center; gap:7px; }
+.cat-item-name span { font-weight:600; }
+.cat-item-amount { font-weight:700; color:var(--text); }
+.cat-bar-track { background:var(--surface2); height:7px; border-radius:6px; overflow:hidden; }
+.cat-bar-fill { height:100%; border-radius:6px; transition:width .8s ease; }
+
+/* ── REPORT BTN ── */
+.btn-report {
+  width:100%; padding:13px;
+  background:linear-gradient(135deg,var(--accent-dark),var(--accent));
+  border:none; border-radius:14px; color:#000;
+  font-size:.9rem; font-weight:800; letter-spacing:.04em;
+  cursor:pointer; margin-bottom:14px; transition:opacity .2s;
+}
+.btn-report:hover { opacity:.88; }
+
+/* ── FORM ── */
+.type-toggle { display:flex; gap:8px; margin-bottom:14px; }
+.type-btn {
+  flex:1; padding:10px; border:2px solid var(--border);
+  border-radius:12px; font-size:.88rem; font-weight:700;
+  cursor:pointer; background:var(--surface2); color:var(--muted);
+  transition:all .2s;
+}
+.type-btn.income.active { border-color:var(--income); background:#0d2018; color:var(--income); }
+.type-btn.expense.active { border-color:var(--expense); background:#200d0d; color:var(--expense); }
+.form-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px; }
+.form-col { display:flex; flex-direction:column; gap:5px; }
+.form-col.full { grid-column:1/-1; }
+.form-col label { font-size:.7rem; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; }
+.form-col input, .form-col select {
+  padding:10px 12px; border:1px solid var(--border); border-radius:10px;
+  font-size:.9rem; font-family:inherit;
+  background:var(--surface2); color:var(--text); outline:none;
+  transition:border-color .2s;
+}
+.form-col input:focus, .form-col select:focus { border-color:var(--accent); }
+.form-col select option { background:var(--surface2); }
+.btn-submit {
+  width:100%; padding:13px; border:none; border-radius:12px;
+  font-size:.95rem; font-weight:800; color:#000;
+  background:linear-gradient(135deg,var(--accent-dark),var(--accent));
+  cursor:pointer; transition:opacity .2s; letter-spacing:.03em;
+}
+.btn-submit:hover { opacity:.88; }
+
+/* Quick chat */
+.chat-wrap {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:18px; overflow:hidden;
+  display:flex; flex-direction:column; height:420px;
+}
+.chat-msgs {
+  flex:1; overflow-y:auto; padding:14px;
+  display:flex; flex-direction:column; gap:10px;
+}
+.chat-hint { text-align:center; padding:24px 16px; color:var(--muted); font-size:.85rem; line-height:1.9; }
+.chat-hint strong { color:var(--accent); }
+.msg { display:flex; gap:8px; }
+.msg.user { flex-direction:row-reverse; }
+.msg-bubble {
+  max-width:80%; padding:9px 13px; border-radius:14px;
+  font-size:.87rem; line-height:1.5;
+}
+.msg.user .msg-bubble { background:linear-gradient(135deg,var(--accent-dark),var(--accent)); color:#000; border-radius:14px 14px 4px 14px; }
+.msg.ai .msg-bubble { background:var(--surface2); color:var(--text); border:1px solid var(--border); border-radius:14px 14px 14px 4px; }
+.msg-av { width:28px; height:28px; border-radius:50%; background:var(--surface2); display:flex; align-items:center; justify-content:center; font-size:.9rem; flex-shrink:0; }
+.chat-confirm {
+  border:1px solid var(--border); border-radius:10px;
+  padding:12px; margin-top:8px; background:var(--bg);
+}
+.cf-row { display:flex; justify-content:space-between; margin-bottom:6px; font-size:.83rem; }
+.cf-lbl { color:var(--muted); }
+.cf-val { font-weight:600; }
+.cf-amt { font-size:1rem; font-weight:700; }
+.cf-amt.income { color:var(--income); }
+.cf-amt.expense { color:var(--expense); }
+.cf-btns { display:flex; gap:8px; margin-top:10px; }
+.cf-btns button { flex:1; padding:8px; border:none; border-radius:8px; font-size:.83rem; font-weight:600; cursor:pointer; }
+.btn-ok { background:var(--income); color:#fff; }
+.btn-no { background:var(--surface2); color:var(--muted); border:1px solid var(--border); }
+.chat-input-row {
+  padding:10px; border-top:1px solid var(--border);
+  display:flex; gap:8px; align-items:flex-end;
+}
+.chat-input-row textarea {
+  flex:1; padding:9px 12px; border:1px solid var(--border);
+  border-radius:10px; font-size:.9rem; font-family:inherit;
+  background:var(--surface2); color:var(--text);
+  resize:none; outline:none; min-height:40px; max-height:100px;
+  transition:border-color .2s;
+}
+.chat-input-row textarea:focus { border-color:var(--accent); }
+.btn-send {
+  width:40px; height:40px; border:none; border-radius:10px;
+  background:linear-gradient(135deg,var(--accent-dark),var(--accent));
+  color:#000; font-size:1rem; cursor:pointer;
+  display:flex; align-items:center; justify-content:center; flex-shrink:0;
+  transition:opacity .2s;
+}
+.btn-send:disabled { opacity:.4; }
+.no-key-banner {
+  background:#2a1e00; border:1px solid var(--accent-dark);
+  border-radius:10px; padding:10px 14px;
+  font-size:.82rem; color:var(--muted); margin-bottom:12px;
+  display:flex; align-items:center; gap:8px;
+}
+.no-key-banner button {
+  margin-left:auto; padding:4px 10px; border:none; border-radius:6px;
+  background:var(--accent); color:#000; font-size:.78rem; font-weight:700; cursor:pointer;
+}
+
+/* History */
+.filter-row { display:flex; gap:8px; align-items:center; margin-bottom:12px; flex-wrap:wrap; }
+.filter-row label { font-size:.72rem; font-weight:700; color:var(--muted); text-transform:uppercase; }
+.filter-row input[type="month"], .filter-row select {
+  padding:7px 10px; border:1px solid var(--border); border-radius:8px;
+  font-size:.83rem; background:var(--surface); color:var(--text); outline:none; font-family:inherit;
+}
+.tx-list { display:flex; flex-direction:column; gap:8px; }
+.tx-item {
+  background:var(--surface); border:1px solid var(--border); border-radius:12px;
+  padding:12px 14px; display:flex; align-items:center; gap:11px;
+  transition:border-color .2s;
+}
+.tx-item:hover { border-color:var(--accent-dark); }
+.tx-icon { width:36px; height:36px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:1.1rem; flex-shrink:0; }
+.tx-item.income .tx-icon { background:#0d2018; }
+.tx-item.expense .tx-icon { background:#200d0d; }
+.tx-info { flex:1; min-width:0; }
+.tx-desc { font-size:.88rem; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.tx-meta { font-size:.7rem; color:var(--muted); margin-top:2px; }
+.tx-amt { font-size:.92rem; font-weight:700; flex-shrink:0; }
+.tx-item.income .tx-amt { color:var(--income); }
+.tx-item.expense .tx-amt { color:var(--expense); }
+.tx-del { background:none; border:none; cursor:pointer; color:#444; font-size:.9rem; padding:4px; border-radius:6px; transition:color .2s; flex-shrink:0; }
+.tx-del:hover { color:var(--expense); }
+.empty { text-align:center; padding:36px 20px; color:var(--muted); font-size:.9rem; }
+.empty-icon { font-size:2.2rem; margin-bottom:8px; }
+
+/* Settings tab */
+.settings-item {
+  display:flex; justify-content:space-between; align-items:center;
+  padding:14px 0; border-bottom:1px solid var(--border);
+  cursor:pointer;
+}
+.settings-item:last-child { border-bottom:none; }
+.settings-item .si-label { font-size:.88rem; font-weight:600; }
+.settings-item .si-sub  { font-size:.72rem; color:var(--muted); margin-top:2px; }
+.settings-item .si-arrow { color:var(--muted); font-size:.85rem; }
+.pro-banner {
+  background:linear-gradient(135deg,#1c1800,#2a2200);
+  border:1px solid var(--accent-dark); border-radius:16px;
+  padding:16px; display:flex; align-items:center; gap:12px;
+  cursor:pointer; margin-bottom:14px; transition:border-color .2s;
+}
+.pro-banner:hover { border-color:var(--accent); }
+.pro-banner .pb-text { flex:1; }
+.pro-banner .pb-title { font-size:.88rem; font-weight:800; color:var(--accent); }
+.pro-banner .pb-sub   { font-size:.72rem; color:var(--muted); margin-top:2px; }
+.pro-badge {
+  background:var(--accent); color:#000; font-size:.7rem; font-weight:800;
+  padding:4px 12px; border-radius:20px; white-space:nowrap;
+}
+
+/* ── MODALS ── */
+.overlay {
+  position:fixed; inset:0; background:rgba(0,0,0,.85);
+  backdrop-filter:blur(6px);
+  display:flex; align-items:center; justify-content:center;
+  padding:20px; z-index:500;
+}
+.overlay.hidden { display:none; }
+.modal-box {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:20px; width:100%; max-width:420px;
+  box-shadow:0 20px 60px rgba(0,0,0,.7);
+  position:relative; overflow:hidden;
+}
+.modal-scrollable { max-height:88vh; overflow-y:auto; }
+.close-x {
+  position:absolute; top:14px; right:16px;
+  font-size:1.5rem; cursor:pointer; z-index:10;
+  line-height:1; font-weight:700;
+}
+/* Report modal header */
+.report-header {
+  background:linear-gradient(to bottom,var(--accent),var(--accent-dark));
+  color:#000; padding:30px 20px; text-align:center;
+}
+.report-header h3 { font-size:1.2rem; font-weight:900; letter-spacing:.06em; margin:0; }
+.report-header p  { font-size:.75rem; opacity:.7; margin:4px 0 0; }
+.report-body { padding:22px; }
+.report-greeting { font-size:.92rem; line-height:1.7; text-align:center; color:var(--text); margin-bottom:16px; }
+.report-rule { border:0; border-top:1px solid var(--border); margin:16px 0; }
+.report-sec { font-size:.75rem; font-weight:700; color:var(--accent); text-transform:uppercase; letter-spacing:.06em; margin-bottom:10px; }
+.top-row { display:flex; justify-content:space-between; margin-bottom:8px; font-size:.85rem; color:var(--text); }
+.top-row strong { color:var(--accent); }
+.save-track { background:var(--surface2); height:12px; border-radius:10px; overflow:hidden; margin-bottom:5px; }
+.save-fill  { background:var(--accent); height:100%; width:0%; transition:width 1s ease; }
+.save-text  { font-size:.73rem; text-align:right; color:var(--muted); }
+.pro-insight { margin-top:22px; background:var(--surface2); border:1px dashed var(--accent-dark); padding:14px; border-radius:14px; text-align:center; }
+.pro-insight p { font-size:.8rem; margin:0 0 10px; color:var(--muted); }
+.btn-pro { padding:8px 18px; font-size:.78rem; font-weight:700; background:linear-gradient(135deg,var(--accent-dark),var(--accent)); border:none; border-radius:20px; color:#000; cursor:pointer; }
+.btn-share-line {
+  width:100%; margin-top:14px; padding:11px;
+  background:#06C755; border:none; border-radius:12px;
+  color:#fff; font-size:.88rem; font-weight:700; cursor:pointer;
+  display:flex; align-items:center; justify-content:center; gap:7px;
+  transition:opacity .2s;
+}
+.btn-share-line:hover { opacity:.85; }
+/* Settings modal */
+.settings-modal { padding:22px; }
+.settings-modal h3 { font-size:.95rem; font-weight:700; color:var(--accent); margin-bottom:14px; }
+.settings-modal p  { font-size:.78rem; color:var(--muted); margin-bottom:10px; line-height:1.6; }
+.settings-modal input {
+  width:100%; padding:10px 12px; border:1px solid var(--border);
+  border-radius:8px; font-size:.9rem; font-family:inherit;
+  background:var(--surface2); color:var(--text); outline:none; margin-bottom:12px;
+}
+.settings-modal input:focus { border-color:var(--accent); }
+.modal-btns { display:flex; gap:10px; }
+.modal-btns button { flex:1; padding:10px; border:none; border-radius:8px; font-size:.9rem; font-weight:600; cursor:pointer; }
+.btn-save   { background:var(--accent); color:#000; }
+.btn-cancel { background:var(--surface2); color:var(--muted); border:1px solid var(--border); }
+/* Premium modal */
+.premium-header { background:linear-gradient(135deg,var(--accent-dark),var(--accent)); color:#000; padding:30px 22px; text-align:center; }
+.premium-header h3 { font-size:1.3rem; font-weight:900; letter-spacing:.06em; margin:0; }
+.premium-header p  { font-size:.78rem; font-weight:700; opacity:.7; margin:4px 0 0; }
+.premium-body { padding:22px; }
+.premium-feature { display:flex; align-items:flex-start; gap:10px; margin-bottom:12px; font-size:.88rem; }
+.premium-feature .pf-check { color:var(--income); font-size:1rem; margin-top:1px; flex-shrink:0; }
+.price-card { background:var(--surface2); border:1px solid var(--accent-dark); border-radius:14px; padding:18px; text-align:center; margin:18px 0; }
+.price-label { font-size:.72rem; color:var(--accent); text-transform:uppercase; letter-spacing:.06em; }
+.price-amount { font-size:1.8rem; font-weight:900; margin:6px 0; }
+.price-note { font-size:.72rem; color:var(--muted); }
+.btn-upgrade { width:100%; padding:14px; border:none; border-radius:12px; font-size:.95rem; font-weight:800; color:#000; background:linear-gradient(135deg,var(--accent-dark),var(--accent)); cursor:pointer; letter-spacing:.04em; }
+
+/* ── TOAST ── */
+.toast {
+  position:fixed; bottom:calc(var(--nav-h) + 16px); left:50%;
+  transform:translateX(-50%) translateY(20px);
+  background:var(--surface2); color:var(--text);
+  border:1px solid var(--border);
+  padding:10px 20px; border-radius:20px;
+  font-size:.85rem; font-weight:600;
+  opacity:0; transition:all .3s ease;
+  z-index:600; white-space:nowrap;
+  box-shadow:0 4px 20px rgba(0,0,0,.5);
+  pointer-events:none;
+}
+.toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+
+@media(max-width:360px){
+  .sum-balance .bal-amount { font-size:2rem; }
+  .sum-card .sc-amount { font-size:1.1rem; }
+}
+</style>
+</head>
+<body>
+
+<!-- ── HEADER ── -->
+<header class="header">
+  <div class="header-logo">🦁</div>
+  <div class="header-title">
+    <h1>ROAR MONEY</h1>
+    <p>THE POWER OF YOUR WEALTH</p>
+  </div>
+  <div style="display:flex;gap:8px;align-items:center;">
+    <div id="lineProfile">
+      <img id="lineAvatar" src="" alt="">
+      <span id="lineName"></span>
+    </div>
+    <button class="icon-btn" onclick="openSettings()">⚙️</button>
+  </div>
+</header>
+
+<!-- ═══════════════ PANEL: สรุป ═══════════════ -->
+<div class="panel active" id="panel-summary">
+
+  <!-- Balance -->
+  <div class="sum-balance">
+    <div class="bal-label">BALANCE THIS MONTH</div>
+    <div class="bal-amount" id="balAmount">฿0</div>
+    <div class="bal-period">รอบบัญชีนี้ ⇄</div>
+  </div>
+
+  <!-- Income / Expense cards -->
+  <div class="sum-two">
+    <div class="sum-card inc active-tab" id="cardInc" onclick="switchSumTab('income')">
+      <div class="sc-label">รายรับ</div>
+      <div class="sc-amount" id="sumInc">฿0</div>
+    </div>
+    <div class="sum-card exp" id="cardExp" onclick="switchSumTab('expense')">
+      <div class="sc-label">รายจ่าย</div>
+      <div class="sc-amount" id="sumExp">฿0</div>
+    </div>
+  </div>
+
+  <!-- Category breakdown card -->
+  <div class="card" id="catCard">
+    <div class="cat-section-title" id="catTitle">สรุปรายจ่าย</div>
+    <div id="catList"></div>
+    <div style="display:flex;gap:8px;margin-top:14px;">
+      <button class="btn-submit" style="font-size:.8rem;padding:10px;" onclick="goPanel('panel-add')">+ บันทึกรายการ</button>
+    </div>
+  </div>
+
+  <!-- ROAR REPORT button -->
+  <button class="btn-report" onclick="openReport()">📜 ROAR REPORT สรุปเดือนนี้</button>
+
+  <!-- Pro banner -->
+  <div class="pro-banner" id="proBanner" onclick="openPremium()">
+    <div class="pb-text">
+      <div class="pb-title">🌟 UPGRADE TO ROAR PRO</div>
+      <div class="pb-sub">วิเคราะห์เชิงลึก · ส่งออก Excel · กราฟรายปี</div>
+    </div>
+    <div class="pro-badge">GET</div>
+  </div>
+
+</div>
+
+<!-- ═══════════════ PANEL: บันทึก ═══════════════ -->
+<div class="panel" id="panel-add">
+  <div class="card">
+    <div class="section-label">บันทึกรายการ</div>
+    <div class="type-toggle">
+      <button class="type-btn income active" id="btnIncome" onclick="setType('income')">💚 รายรับ</button>
+      <button class="type-btn expense" id="btnExpense" onclick="setType('expense')">❤️ รายจ่าย</button>
+    </div>
+    <div class="form-row">
+      <div class="form-col">
+        <label>จำนวนเงิน (฿)</label>
+        <input type="number" id="inputAmount" placeholder="0.00" min="0" step="0.01">
+      </div>
+      <div class="form-col">
+        <label>วันที่</label>
+        <input type="date" id="inputDate">
+      </div>
+      <div class="form-col">
+        <label>หมวดหมู่</label>
+        <select id="inputCategory"></select>
+      </div>
+      <div class="form-col">
+        <label>รายละเอียด</label>
+        <input type="text" id="inputDesc" placeholder="เช่น ค่ากาแฟ">
+      </div>
+    </div>
+    <button class="btn-submit" onclick="addEntry()">บันทึกรายการ</button>
+  </div>
+
+  <!-- Quick chat card -->
+  <div class="card" style="padding:0;">
+    <div style="padding:14px 16px 10px;">
+      <div class="section-label">AI บันทึกเร็ว</div>
+    </div>
+    <div id="noKeyBanner" class="no-key-banner" style="display:none;margin:0 14px 10px;">
+      ⚠️ ยังไม่ได้ตั้งค่า API Key
+      <button onclick="openSettings()">ตั้งค่า</button>
+    </div>
+    <div class="chat-wrap" style="border:none;border-radius:0 0 18px 18px;height:280px;">
+      <div class="chat-msgs" id="chatMessages">
+        <div class="chat-hint">
+          <div style="font-size:1.8rem;margin-bottom:8px">🦁</div>
+          บอกป้า เช่น<br>
+          <strong>"กินข้าว 80"</strong><br>
+          <strong>"รับเงินเดือน 25000"</strong><br>
+          <strong>"ค่าไฟ 450"</strong>
+        </div>
+      </div>
+      <div class="chat-input-row">
+        <textarea id="chatInput" placeholder="พิมพ์รายการ..." rows="1"
+          onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat()}"
+          oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"></textarea>
+        <button class="btn-send" id="btnSend" onclick="sendChat()">➤</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ PANEL: วิเคราะห์ ═══════════════ -->
+<div class="panel" id="panel-chart">
+  <div class="card" style="grid-column:1/-1;">
+    <div class="section-label">รายรับ vs รายจ่าย 6 เดือน</div>
+    <div style="position:relative;height:200px;"><canvas id="chartBar"></canvas></div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+    <div class="card">
+      <div class="section-label">รายจ่ายหมวดหมู่</div>
+      <div style="position:relative;height:180px;"><canvas id="chartPie"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="section-label">รายรับหมวดหมู่</div>
+      <div style="position:relative;height:180px;"><canvas id="chartPieIncome"></canvas></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ PANEL: รายการ ═══════════════ -->
+<div class="panel" id="panel-history">
+  <div class="filter-row">
+    <label>เดือน</label>
+    <input type="month" id="filterMonth" onchange="renderHistory()">
+    <select id="filterType" onchange="renderHistory()">
+      <option value="all">ทั้งหมด</option>
+      <option value="income">รายรับ</option>
+      <option value="expense">รายจ่าย</option>
+    </select>
+  </div>
+  <div class="tx-list" id="txList"></div>
+</div>
+
+<!-- ═══════════════ PANEL: ตั้งค่า ═══════════════ -->
+<div class="panel" id="panel-settings">
+  <div class="pro-banner" id="proBanner2" onclick="openPremium()">
+    <div style="font-size:1.8rem;">👑</div>
+    <div class="pb-text">
+      <div class="pb-title">ROAR PRO</div>
+      <div class="pb-sub">฿365/ปี · เฉลี่ย 1 บาทต่อวัน</div>
+    </div>
+    <div class="pro-badge">UPGRADE</div>
+  </div>
+  <div class="card">
+    <div class="settings-item" onclick="openSettings()">
+      <div><div class="si-label">🔑 Claude API Key</div><div class="si-sub">ใส่เพื่อใช้ AI บันทึกเร็ว</div></div>
+      <div class="si-arrow">›</div>
+    </div>
+    <div class="settings-item" onclick="exportData()">
+      <div><div class="si-label">💾 สำรองข้อมูล</div><div class="si-sub">ดาวน์โหลด backup JSON</div></div>
+      <div class="si-arrow">›</div>
+    </div>
+    <div class="settings-item" onclick="document.getElementById('restoreInput').click()">
+      <div><div class="si-label">📥 คืนค่าข้อมูล</div><div class="si-sub">นำเข้าไฟล์ backup</div></div>
+      <div class="si-arrow">›</div>
+    </div>
+    <input type="file" id="restoreInput" style="display:none" accept=".json" onchange="importData(event)">
+    <div class="settings-item" onclick="clearData()">
+      <div><div class="si-label" style="color:var(--expense);">🗑️ ลบข้อมูลทั้งหมด</div><div class="si-sub">ไม่สามารถกู้คืนได้</div></div>
+      <div class="si-arrow">›</div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="section-label">เกี่ยวกับ</div>
+    <div style="font-size:.82rem;color:var(--muted);line-height:2;">
+      <div>ROAR MONEY v1.0</div>
+      <div>LINE LIFF: <span id="liffStatus">ยังไม่ได้ตั้งค่า</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ BOTTOM NAV ══ -->
+<nav class="bottom-nav">
+  <button class="nav-btn active" id="nav-summary" onclick="goPanel('panel-summary')">
+    <span class="nav-icon">🏠</span>สรุป
+  </button>
+  <button class="nav-btn" id="nav-add" onclick="goPanel('panel-add')">
+    <span class="nav-icon">✏️</span>บันทึก
+  </button>
+  <button class="nav-btn" id="nav-chart" onclick="goPanel('panel-chart')">
+    <span class="nav-icon">📊</span>วิเคราะห์
+  </button>
+  <button class="nav-btn" id="nav-history" onclick="goPanel('panel-history')">
+    <span class="nav-icon">📋</span>รายการ
+  </button>
+  <button class="nav-btn" id="nav-settings" onclick="goPanel('panel-settings')">
+    <span class="nav-icon">⚙️</span>ตั้งค่า
+  </button>
+</nav>
+
+<!-- ── REPORT MODAL ── -->
+<div class="overlay hidden" id="reportOverlay">
+  <div class="modal-box modal-scrollable">
+    <div class="report-header">
+      <span class="close-x" onclick="closeReport()" style="color:rgba(0,0,0,.5);">&times;</span>
+      <h3 id="reportTitle">ROAR REPORT</h3>
+      <p id="reportSubtitle"></p>
+    </div>
+    <div class="report-body">
+      <div class="report-greeting" id="reportGreeting"></div>
+      <hr class="report-rule">
+      <div class="report-sec">🚩 จ่ายหนักสุด 3 อันดับ</div>
+      <div id="topExpenses"></div>
+      <div class="report-sec" style="margin-top:20px;">💰 พลังการออม</div>
+      <div class="save-track"><div class="save-fill" id="saveBar"></div></div>
+      <p class="save-text" id="saveText"></p>
+      <div class="pro-insight" id="proInsight">
+        <p>🔒 วิเคราะห์เชิงลึกว่าเงินรั่วจากไหน</p>
+        <button class="btn-pro" onclick="openPremium()">ปลดล็อก ROAR PRO</button>
+      </div>
+      <button class="btn-share-line" id="btnShareLine" onclick="shareToLine()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="white">
+          <path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63h2.386c.346 0 .627.285.627.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63.346 0 .628.285.628.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.281.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.078 9.436-6.975C23.176 14.393 24 12.458 24 10.314"/>
+        </svg>
+        แชร์ไปยัง LINE
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ── API KEY MODAL ── -->
+<div class="overlay hidden" id="apiOverlay">
+  <div class="modal-box">
+    <div class="settings-modal">
+      <span class="close-x" onclick="closeSettings()" style="color:var(--muted);">&times;</span>
+      <h3>⚙️ Claude API Key</h3>
+      <p>ใส่ Anthropic API Key เพื่อใช้ AI บันทึกเร็ว<br>Key เก็บในเครื่องเท่านั้น</p>
+      <input type="password" id="apiKeyInput" placeholder="sk-ant-api03-..." autocomplete="off">
+      <div class="modal-btns">
+        <button class="btn-cancel" onclick="closeSettings()">ยกเลิก</button>
+        <button class="btn-save" onclick="saveApiKey()">บันทึก</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── PREMIUM MODAL ── -->
+<div class="overlay hidden" id="premiumOverlay">
+  <div class="modal-box modal-scrollable">
+    <span class="close-x" onclick="closePremium()" style="color:rgba(0,0,0,.5);">&times;</span>
+    <div class="premium-header">
+      <h3>👑 ROAR PRO</h3>
+      <p>BECOME A FINANCIAL LION</p>
+    </div>
+    <div class="premium-body">
+      <div class="premium-feature"><span class="pf-check">✅</span><span>วิเคราะห์พฤติกรรมการใช้เงินเชิงลึก</span></div>
+      <div class="premium-feature"><span class="pf-check">✅</span><span>ส่งออกข้อมูล Excel ไม่จำกัด</span></div>
+      <div class="premium-feature"><span class="pf-check">✅</span><span>กราฟเปรียบเทียบรายเดือน รายปี</span></div>
+      <div class="premium-feature"><span class="pf-check">✅</span><span>สำรองข้อมูลคลาวด์อัตโนมัติ</span></div>
+      <div class="premium-feature"><span class="pf-check">✅</span><span>เตือนจดรายการประจำวัน</span></div>
+      <div class="price-card">
+        <div class="price-label">YEARLY PLAN</div>
+        <div class="price-amount">฿365.00</div>
+        <div class="price-note">เฉลี่ยเพียง 1 บาทต่อวัน</div>
+      </div>
+      <button class="btn-upgrade" onclick="subscribeDone()">UPGRADE NOW 🦁</button>
+      <button class="btn-cancel" style="width:100%;margin-top:10px;padding:10px;border:1px solid var(--border);background:none;color:var(--muted);border-radius:10px;cursor:pointer;" onclick="closePremium()">ไว้ทีหลัง</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- ═══════════════════════════ SCRIPT ═══════════════════════════ -->
+<script>
+// ── CONFIG ──
+const LIFF_ID = ''; // ใส่ LIFF ID ที่นี่
+
+// ── DATA ──
+const INCOME_CATS = ['เงินเดือน','ธุรกิจ','ลงทุน','ฟรีแลนซ์','ของขวัญ','อื่นๆ (รับ)'];
+const EXPENSE_CATS = ['อาหาร','เดินทาง','ที่พัก','สาธารณูปโภค','สุขภาพ','ความงาม','บันเทิง','ช้อปปิ้ง','การศึกษา','ประกัน','อื่นๆ'];
+const CAT_ICONS = {
+  'เงินเดือน':'💼','ธุรกิจ':'🏢','ลงทุน':'📈','ฟรีแลนซ์':'💻','ของขวัญ':'🎁','อื่นๆ (รับ)':'💰',
+  'อาหาร':'🍜','เดินทาง':'🚌','ที่พัก':'🏠','สาธารณูปโภค':'💡','สุขภาพ':'💊','ความงาม':'💄',
+  'บันเทิง':'🎮','ช้อปปิ้ง':'🛍️','การศึกษา':'📚','ประกัน':'🛡️','อื่นๆ':'📦'
+};
+const CAT_COLORS_EXP = ['#e74c3c','#e67e22','#f1c40f','#2ecc71','#1abc9c','#3498db','#9b59b6','#e91e63','#795548','#607d8b','#d4af37'];
+const CAT_COLORS_INC = ['#27ae60','#00bcd4','#3f51b5','#9c27b0','#ff5722','#d4af37'];
+const TH_MONTHS     = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+const TH_MONTHS_S   = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+
+let entries   = JSON.parse(localStorage.getItem('roar_entries') || '[]');
+let isPro     = localStorage.getItem('roar_pro') === 'true';
+let sumTab    = 'expense'; // 'income' | 'expense'
+let currentType = 'income';
+let chartBar, chartPie, chartPieIncome;
+let isLiff = false;
+
+// ── LIFF ──
+async function initLiff() {
+  if (!LIFF_ID) {
+    document.getElementById('liffStatus').textContent = 'ยังไม่ได้ตั้งค่า LIFF_ID';
+    document.getElementById('btnShareLine').style.display = 'none';
+    return;
+  }
+  try {
+    await liff.init({ liffId: LIFF_ID });
+    isLiff = liff.isInClient();
+    if (liff.isLoggedIn()) {
+      const p = await liff.getProfile();
+      document.getElementById('lineAvatar').src = p.pictureUrl || '';
+      document.getElementById('lineName').textContent = p.displayName || '';
+      document.getElementById('lineProfile').classList.add('show');
+      document.getElementById('liffStatus').textContent = 'เชื่อมต่อแล้ว (' + p.displayName + ')';
+      document.getElementById('btnShareLine').style.display = 'flex';
+    } else { liff.login(); }
+  } catch(e) {
+    document.getElementById('liffStatus').textContent = 'เชื่อมต่อไม่สำเร็จ';
+  }
+}
+
+// ── SHARE TO LINE ──
+function shareToLine() {
+  const ym = new Date().toISOString().slice(0,7);
+  const [y,m] = ym.split('-');
+  const mData = entries.filter(e => e.date.startsWith(ym));
+  const inc = mData.filter(e => e.type==='income').reduce((s,e)=>s+e.amount,0);
+  const exp = mData.filter(e => e.type==='expense').reduce((s,e)=>s+e.amount,0);
+  const save = inc-exp;
+  const sp = inc>0 ? Math.max(0,(save/inc)*100) : 0;
+  const msg = `🦁 ROAR MONEY รายงานเดือน${TH_MONTHS[parseInt(m)-1]} ${parseInt(y)+543}\n\n💚 รายรับ: ฿${fmt(inc)}\n❤️ รายจ่าย: ฿${fmt(exp)}\n💰 คงเหลือ: ฿${fmt(save)}\n📊 อัตราออม: ${sp.toFixed(1)}%`;
+  if (isLiff && liff.isLoggedIn()) {
+    liff.sendMessages([{type:'text',text:msg}]).then(()=>showToast('✅ แชร์ไปยัง LINE แล้ว')).catch(()=>showToast('❌ แชร์ไม่สำเร็จ'));
+  } else if (navigator.share) {
+    navigator.share({title:'ROAR MONEY Report',text:msg});
+  } else {
+    navigator.clipboard.writeText(msg).then(()=>showToast('📋 คัดลอกแล้ว'));
+  }
+}
+
+// ── INIT ──
+function init() {
+  const today = new Date();
+  document.getElementById('inputDate').value = today.toISOString().slice(0,10);
+  document.getElementById('filterMonth').value = today.toISOString().slice(0,7);
+  setType('income');
+  if (isPro) { document.getElementById('proBanner').style.display='none'; document.getElementById('proBanner2').style.display='none'; }
+  renderSummary();
+  renderHistory();
+  initLiff();
+}
+
+// ── PANEL NAV ──
+const PANELS = ['summary','add','chart','history','settings'];
+function goPanel(id) {
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  const key = id.replace('panel-','');
+  const nb = document.getElementById('nav-'+key);
+  if (nb) nb.classList.add('active');
+  if (id==='panel-chart') renderCharts();
+  if (id==='panel-history') renderHistory();
+  if (id==='panel-add') checkApiKeyBanner();
+}
+
+// ── SUMMARY & CATEGORY BARS ──
+let catBarTimeouts = [];
+function renderSummary() {
+  const ym = new Date().toISOString().slice(0,7);
+  const mData = entries.filter(e=>e.date.startsWith(ym));
+  const inc = mData.filter(e=>e.type==='income').reduce((s,e)=>s+e.amount,0);
+  const exp = mData.filter(e=>e.type==='expense').reduce((s,e)=>s+e.amount,0);
+  const bal = inc-exp;
+  document.getElementById('sumInc').textContent = '฿'+fmt(inc);
+  document.getElementById('sumExp').textContent = '฿'+fmt(exp);
+  const el = document.getElementById('balAmount');
+  el.textContent = (bal<0?'-':'')+'฿'+fmt(Math.abs(bal));
+  el.style.color = bal<0 ? 'var(--expense)' : 'var(--accent)';
+  renderCatBars(mData, sumTab, inc, exp);
+}
+
+function switchSumTab(tab) {
+  sumTab = tab;
+  document.getElementById('cardInc').classList.toggle('active-tab', tab==='income');
+  document.getElementById('cardExp').classList.toggle('active-tab', tab==='expense');
+  const ym = new Date().toISOString().slice(0,7);
+  const mData = entries.filter(e=>e.date.startsWith(ym));
+  const inc = mData.filter(e=>e.type==='income').reduce((s,e)=>s+e.amount,0);
+  const exp = mData.filter(e=>e.type==='expense').reduce((s,e)=>s+e.amount,0);
+  renderCatBars(mData, tab, inc, exp);
+}
+
+function renderCatBars(mData, tab, inc, exp) {
+  catBarTimeouts.forEach(clearTimeout);
+  catBarTimeouts = [];
+  const isExp = tab==='expense';
+  document.getElementById('catTitle').textContent = isExp ? 'สรุปรายจ่าย' : 'สรุปรายรับ';
+  const cats = isExp ? EXPENSE_CATS : INCOME_CATS;
+  const colors = isExp ? CAT_COLORS_EXP : CAT_COLORS_INC;
+  const total = isExp ? exp : inc;
+  const catMap = {};
+  mData.filter(e=>e.type===tab).forEach(e=>{ catMap[e.category]=(catMap[e.category]||0)+e.amount; });
+  const sortedCats = cats.filter(c=>catMap[c]>0).sort((a,b)=>(catMap[b]||0)-(catMap[a]||0));
+  const displayCats = sortedCats.length ? sortedCats : cats.slice(0,5);
+  const html = displayCats.map((cat,i)=>{
+    const amt = catMap[cat]||0;
+    const pct = total>0 ? Math.max(0,Math.min(100,(amt/total)*100)) : 0;
+    const color = colors[i % colors.length];
+    return `<div class="cat-item">
+      <div class="cat-item-header">
+        <div class="cat-item-name"><span>${CAT_ICONS[cat]||'💰'}</span><span>${cat}</span></div>
+        <div class="cat-item-amount">${isExp?'':''}฿${fmt(amt)}</div>
+      </div>
+      <div class="cat-bar-track">
+        <div class="cat-bar-fill" id="bar_${i}" style="width:0%;background:${color};"></div>
+      </div>
+    </div>`;
+  }).join('');
+  document.getElementById('catList').innerHTML = html;
+  displayCats.forEach((_,i)=>{
+    const amt = catMap[displayCats[i]]||0;
+    const pct = total>0 ? Math.max(0,Math.min(100,(amt/total)*100)) : 0;
+    const t = setTimeout(()=>{
+      const el = document.getElementById('bar_'+i);
+      if (el) el.style.width = pct+'%';
+    }, 80+i*40);
+    catBarTimeouts.push(t);
+  });
+}
+
+// ── TYPE TOGGLE ──
+function setType(type) {
+  currentType = type;
+  document.getElementById('btnIncome').classList.toggle('active', type==='income');
+  document.getElementById('btnExpense').classList.toggle('active', type==='expense');
+  const cats = type==='income' ? INCOME_CATS : EXPENSE_CATS;
+  document.getElementById('inputCategory').innerHTML = cats.map(c=>`<option value="${c}">${CAT_ICONS[c]||''} ${c}</option>`).join('');
+}
+
+// ── ADD ENTRY ──
+function addEntry() {
+  const amount = parseFloat(document.getElementById('inputAmount').value);
+  const date   = document.getElementById('inputDate').value;
+  const category = document.getElementById('inputCategory').value;
+  const desc   = document.getElementById('inputDesc').value.trim() || category;
+  if (!amount||amount<=0) { showToast('กรุณาใส่จำนวนเงิน'); return; }
+  if (!date) { showToast('กรุณาเลือกวันที่'); return; }
+  entries.push({id:Date.now(),type:currentType,amount,date,category,desc});
+  save(); renderSummary(); renderHistory();
+  if (chartBar) renderCharts();
+  document.getElementById('inputAmount').value='';
+  document.getElementById('inputDesc').value='';
+  showToast(currentType==='income'?'✅ บันทึกรายรับแล้ว':'✅ บันทึกรายจ่ายแล้ว');
+}
+
+// ── DELETE ──
+function deleteEntry(id) {
+  entries = entries.filter(e=>e.id!==id);
+  save(); renderSummary(); renderHistory();
+  if (chartBar) renderCharts();
+  showToast('🗑️ ลบรายการแล้ว');
+}
+
+// ── HISTORY ──
+function renderHistory() {
+  const ym = document.getElementById('filterMonth').value;
+  const ft = document.getElementById('filterType').value;
+  let data = entries.filter(e=>e.date.startsWith(ym));
+  if (ft!=='all') data=data.filter(e=>e.type===ft);
+  data.sort((a,b)=>b.date.localeCompare(a.date)||b.id-a.id);
+  const c = document.getElementById('txList');
+  if (!data.length) { c.innerHTML=`<div class="empty"><div class="empty-icon">📭</div>ไม่มีรายการเดือนนี้</div>`; return; }
+  c.innerHTML = data.map(e=>`
+    <div class="tx-item ${e.type}">
+      <div class="tx-icon">${CAT_ICONS[e.category]||'💰'}</div>
+      <div class="tx-info">
+        <div class="tx-desc">${esc(e.desc)}</div>
+        <div class="tx-meta">${e.category} · ${formatDate(e.date)}</div>
+      </div>
+      <div class="tx-amt">${e.type==='income'?'+':'-'}฿${fmt(e.amount)}</div>
+      <button class="tx-del" onclick="deleteEntry(${e.id})">🗑️</button>
+    </div>`).join('');
+}
+
+// ── CHARTS ──
+function renderCharts() { renderBarChart(); renderPieChart(); renderPieIncomeChart(); }
+
+function renderBarChart() {
+  const months=[]; const now=new Date();
+  for(let i=5;i>=0;i--){const d=new Date(now.getFullYear(),now.getMonth()-i,1);months.push(d.toISOString().slice(0,7));}
+  const labels=months.map(m=>TH_MONTHS_S[parseInt(m.split('-')[1])-1]);
+  const incs=months.map(m=>entries.filter(e=>e.type==='income'&&e.date.startsWith(m)).reduce((s,e)=>s+e.amount,0));
+  const exps=months.map(m=>entries.filter(e=>e.type==='expense'&&e.date.startsWith(m)).reduce((s,e)=>s+e.amount,0));
+  if(chartBar)chartBar.destroy();
+  chartBar=new Chart(document.getElementById('chartBar'),{
+    type:'bar',
+    data:{labels,datasets:[{label:'รายรับ',data:incs,backgroundColor:'rgba(39,174,96,.75)',borderRadius:6},{label:'รายจ่าย',data:exps,backgroundColor:'rgba(231,76,60,.75)',borderRadius:6}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top',labels:{color:'#aaa',font:{size:11}}},tooltip:{callbacks:{label:ctx=>' ฿'+fmt(ctx.raw)}}},scales:{x:{ticks:{color:'#777'},grid:{color:'#252525'}},y:{ticks:{color:'#777',callback:v=>'฿'+fmt(v)},grid:{color:'#252525'}}}}
+  });
+}
+
+function renderPieChart() {
+  const ym=new Date().toISOString().slice(0,7);
+  const m={};entries.filter(e=>e.type==='expense'&&e.date.startsWith(ym)).forEach(e=>{m[e.category]=(m[e.category]||0)+e.amount;});
+  const cats=Object.keys(m);
+  if(chartPie){chartPie.destroy();chartPie=null;}
+  if(!cats.length)return;
+  chartPie=new Chart(document.getElementById('chartPie'),{type:'doughnut',data:{labels:cats,datasets:[{data:cats.map(c=>m[c]),backgroundColor:CAT_COLORS_EXP.slice(0,cats.length),borderWidth:2,borderColor:'#1e1e1e'}]},options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{position:'right',labels:{color:'#aaa',font:{size:10},boxWidth:10}},tooltip:{callbacks:{label:ctx=>ctx.label+': ฿'+fmt(ctx.raw)}}}}});
+}
+
+function renderPieIncomeChart() {
+  const ym=new Date().toISOString().slice(0,7);
+  const m={};entries.filter(e=>e.type==='income'&&e.date.startsWith(ym)).forEach(e=>{m[e.category]=(m[e.category]||0)+e.amount;});
+  const cats=Object.keys(m);
+  if(chartPieIncome){chartPieIncome.destroy();chartPieIncome=null;}
+  if(!cats.length)return;
+  chartPieIncome=new Chart(document.getElementById('chartPieIncome'),{type:'doughnut',data:{labels:cats,datasets:[{data:cats.map(c=>m[c]),backgroundColor:CAT_COLORS_INC.slice(0,cats.length),borderWidth:2,borderColor:'#1e1e1e'}]},options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{position:'right',labels:{color:'#aaa',font:{size:10},boxWidth:10}},tooltip:{callbacks:{label:ctx=>ctx.label+': ฿'+fmt(ctx.raw)}}}}});
+}
+
+// ── ROAR REPORT ──
+function openReport() {
+  const now=new Date(); const ym=now.toISOString().slice(0,7);
+  const [y,m]=ym.split('-'); const mIdx=parseInt(m)-1;
+  document.getElementById('reportTitle').textContent = TH_MONTHS[mIdx].toUpperCase()+' REPORT';
+  document.getElementById('reportSubtitle').textContent = 'สรุปสถานะการเงิน Roar Money';
+  const mData=entries.filter(e=>e.date.startsWith(ym));
+  const inc=mData.filter(e=>e.type==='income').reduce((s,e)=>s+e.amount,0);
+  const exp=mData.filter(e=>e.type==='expense').reduce((s,e)=>s+e.amount,0);
+  const sp=inc>0?Math.max(0,((inc-exp)/inc)*100):0;
+  let g='';
+  if(sp>30) g='🦁 สุดยอดมากครับ! คุณออมเงินได้ดีเกินเป้าหมาย พลังการคำรามแข็งแกร่งมาก!';
+  else if(sp>0) g='🐯 ทำได้ดีครับ ยังมีเงินเหลือเก็บ ลองคุมรายจ่ายอีกนิดจะเยี่ยมมากครับ';
+  else if(inc===0) g='📭 ยังไม่มีข้อมูลเดือนนี้ครับ บันทึกรายการก่อนเลยนะครับ';
+  else g='🦁 เดือนนี้รายจ่ายแซงรายรับไปแล้วครับ ลองเช็กว่าส่วนไหนลดได้บ้างนะครับ';
+  document.getElementById('reportGreeting').textContent=g;
+  const expCats={};mData.filter(e=>e.type==='expense').forEach(e=>{expCats[e.category]=(expCats[e.category]||0)+e.amount;});
+  const top3=Object.entries(expCats).sort((a,b)=>b[1]-a[1]).slice(0,3);
+  document.getElementById('topExpenses').innerHTML=top3.length
+    ?top3.map(([c,a],i)=>`<div class="top-row"><span>${i+1}. ${CAT_ICONS[c]||''} ${c}</span><strong>฿${fmt(a)}</strong></div>`).join('')
+    :'<p style="font-size:.82rem;color:var(--muted);">ไม่มีข้อมูลรายจ่ายครับ</p>';
+  document.getElementById('saveBar').style.width='0%';
+  document.getElementById('saveText').textContent=`ออมได้ ${sp.toFixed(1)}% ของรายได้ (฿${fmt(inc-exp)})`;
+  setTimeout(()=>{document.getElementById('saveBar').style.width=sp+'%';},80);
+  if(isPro){
+    const prev=new Date(now.getFullYear(),now.getMonth()-1,1).toISOString().slice(0,7);
+    const pExp=entries.filter(e=>e.type==='expense'&&e.date.startsWith(prev)).reduce((s,e)=>s+e.amount,0);
+    const d=pExp>0?((exp-pExp)/pExp*100).toFixed(1):null;
+    const dt=d!==null?(parseFloat(d)>=0?`เพิ่มขึ้น ${d}%`:`ลดลง ${Math.abs(d)}%`):'ไม่มีข้อมูลเดือนก่อน';
+    document.getElementById('proInsight').innerHTML=`<p style="font-size:.82rem;color:var(--accent);">✅ PRO: รายจ่ายเดือนนี้${dt}จากเดือนที่แล้วครับ</p>`;
+  } else {
+    document.getElementById('proInsight').innerHTML=`<p>🔒 วิเคราะห์เชิงลึกว่าเงินรั่วจากไหน</p><button class="btn-pro" onclick="openPremium()">ปลดล็อก ROAR PRO</button>`;
+  }
+  document.getElementById('btnShareLine').style.display = (LIFF_ID||isLiff)?'flex':'none';
+  document.getElementById('reportOverlay').classList.remove('hidden');
+}
+function closeReport(){ document.getElementById('reportOverlay').classList.add('hidden'); }
+function openPremium(){ document.getElementById('premiumOverlay').classList.remove('hidden'); }
+function closePremium(){ document.getElementById('premiumOverlay').classList.add('hidden'); }
+function subscribeDone(){
+  isPro=true; localStorage.setItem('roar_pro','true');
+  document.getElementById('proBanner').style.display='none';
+  document.getElementById('proBanner2').style.display='none';
+  closePremium(); showToast('👑 ยินดีต้อนรับสู่ ROAR PRO!');
+}
+function openSettings(){
+  document.getElementById('apiKeyInput').value=getApiKey();
+  document.getElementById('apiOverlay').classList.remove('hidden');
+}
+function closeSettings(){ document.getElementById('apiOverlay').classList.add('hidden'); }
+function saveApiKey(){
+  localStorage.setItem('anthropic_api_key',document.getElementById('apiKeyInput').value.trim());
+  closeSettings(); checkApiKeyBanner(); showToast('✅ บันทึก API Key แล้ว');
+}
+
+// ── CHAT AI ──
+let chatLoading=false;
+async function sendChat(){
+  if(chatLoading)return;
+  const input=document.getElementById('chatInput');
+  const text=input.value.trim(); if(!text)return;
+  const apiKey=getApiKey(); if(!apiKey){openSettings();return;}
+  addMsg('user',text); input.value=''; input.style.height='auto';
+  chatLoading=true; document.getElementById('btnSend').disabled=true;
+  const lid=addMsg('ai','⏳ กำลังคิด...');
+  try{
+    const r=await callClaude(apiKey,text,new Date().toISOString().slice(0,10));
+    removeMsg(lid); showConfirmCard(r);
+  }catch(err){
+    removeMsg(lid); addMsg('ai','❌ '+(err.message||'ลองใหม่อีกครั้ง'));
+  }finally{
+    chatLoading=false; document.getElementById('btnSend').disabled=false;
+  }
+}
+
+async function callClaude(apiKey,userText,today){
+  const sys=`คุณเป็นผู้ช่วยบัญชีส่วนตัว วันนี้คือ ${today}\nดึงข้อมูลธุรกรรมจากข้อความภาษาไทยหรืออังกฤษ\nหมวดหมู่รายรับ: เงินเดือน, ธุรกิจ, ลงทุน, ฟรีแลนซ์, ของขวัญ, อื่นๆ (รับ)\nหมวดหมู่รายจ่าย: อาหาร, เดินทาง, ที่พัก, สาธารณูปโภค, สุขภาพ, ความงาม, บันเทิง, ช้อปปิ้ง, การศึกษา, ประกัน, อื่นๆ`;
+  const resp=await fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-calls':'true'},
+    body:JSON.stringify({model:'claude-opus-4-6',max_tokens:512,system:sys,messages:[{role:'user',content:userText}],
+      output_config:{format:{type:'json_schema',schema:{type:'object',properties:{type:{type:'string',enum:['income','expense']},amount:{type:'number'},category:{type:'string'},date:{type:'string'},description:{type:'string'}},required:['type','amount','category','date','description'],additionalProperties:false}}}})
+  });
+  if(!resp.ok){const e=await resp.json().catch(()=>({}));if(resp.status===401)throw new Error('API Key ไม่ถูกต้อง');throw new Error(e?.error?.message||'HTTP '+resp.status);}
+  return JSON.parse((await resp.json()).content[0].text);
+}
+
+function showConfirmCard(r){
+  const id='cf_'+Date.now();
+  const sign=r.type==='income'?'+':'-';
+  const html=`<div class="chat-confirm" id="${id}">
+    <div class="cf-row"><span class="cf-lbl">ประเภท</span><span class="cf-val">${r.type==='income'?'💚 รายรับ':'❤️ รายจ่าย'}</span></div>
+    <div class="cf-row"><span class="cf-lbl">จำนวน</span><span class="cf-val cf-amt ${r.type}">${sign}฿${fmt(r.amount)}</span></div>
+    <div class="cf-row"><span class="cf-lbl">หมวดหมู่</span><span class="cf-val">${CAT_ICONS[r.category]||''} ${esc(r.category)}</span></div>
+    <div class="cf-row"><span class="cf-lbl">วันที่</span><span class="cf-val">${formatDate(r.date)}</span></div>
+    <div class="cf-row"><span class="cf-lbl">รายละเอียด</span><span class="cf-val">${esc(r.description)}</span></div>
+    <div class="cf-btns">
+      <button class="btn-ok" onclick="confirmEntry(${JSON.stringify(r).replace(/"/g,'&quot;')},'${id}')">✅ บันทึก</button>
+      <button class="btn-no" onclick="document.getElementById('${id}').remove()">✏️ ยกเลิก</button>
+    </div>
+  </div>`;
+  addMsg('ai','ดึงข้อมูลได้แล้วครับ ✨',html);
+}
+
+function confirmEntry(r,cardId){
+  entries.push({id:Date.now(),type:r.type,amount:r.amount,date:r.date,category:r.category,desc:r.description});
+  save();renderSummary();renderHistory();if(chartBar)renderCharts();
+  document.getElementById(cardId)?.remove();
+  addMsg('ai','✅ บันทึกแล้วครับ มีรายการอื่นอีกไหมครับ 🦁');
+  showToast('✅ บันทึกรายการแล้ว');
+}
+
+let mc=0;
+function addMsg(role,text,extra=''){
+  const id='msg_'+(++mc);
+  const av=role==='user'?'👤':'🦁';
+  const el=document.createElement('div');
+  el.className='msg '+role; el.id=id;
+  el.innerHTML=`<div class="msg-av">${av}</div><div><div class="msg-bubble">${esc(text)}</div>${extra}</div>`;
+  const c=document.getElementById('chatMessages');
+  const hint=c.querySelector('.chat-hint');if(hint)hint.remove();
+  c.appendChild(el);c.scrollTop=c.scrollHeight;return id;
+}
+function removeMsg(id){document.getElementById(id)?.remove();}
+
+// ── BACKUP / RESTORE ──
+function exportData(){
+  const b=new Blob([JSON.stringify(entries)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='roar_money_backup.json';a.click();
+}
+function importData(ev){
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{entries=JSON.parse(e.target.result);save();renderSummary();renderHistory();showToast('✅ คืนค่าข้อมูลแล้ว');}
+    catch{showToast('❌ ไฟล์ไม่ถูกต้อง');}
+  };
+  reader.readAsText(ev.target.files[0]);
+}
+function clearData(){
+  if(!confirm('ลบข้อมูลทั้งหมดไหมครับ? ไม่สามารถกู้คืนได้'))return;
+  entries=[];save();renderSummary();renderHistory();showToast('🗑️ ลบข้อมูลแล้ว');
+}
+
+// ── HELPERS ──
+function getApiKey(){return localStorage.getItem('anthropic_api_key')||'';}
+function checkApiKeyBanner(){document.getElementById('noKeyBanner').style.display=getApiKey()?'none':'flex';}
+function save(){localStorage.setItem('roar_entries',JSON.stringify(entries));}
+function fmt(n){return Number(n).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2});}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function formatDate(d){const[y,m,day]=d.split('-');return parseInt(day)+' '+TH_MONTHS_S[parseInt(m)-1]+' '+(parseInt(y)+543);}
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
+
+init();
+</script>
+</body>
+</html>
