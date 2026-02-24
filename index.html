@@ -372,6 +372,36 @@ body{padding-bottom:var(--nav-h);}
 }
 @keyframes dong-run{from{left:-70px}to{left:110%}}
 
+/* ── HOME BEAR ── */
+.home-bear-wrap{text-align:center;margin:4px 0 10px;font-size:2.5rem;cursor:pointer;}
+
+/* ── CHAT BOX (home) ── */
+.chat-box{
+  background:var(--white);border-radius:16px;padding:14px;
+  box-shadow:0 1px 4px rgba(0,0,0,.05);margin-bottom:14px;
+}
+
+/* ── PIE CHART ── */
+.pie-section{
+  background:var(--white);border-radius:20px;
+  padding:16px 16px 14px;margin-bottom:14px;
+  box-shadow:0 1px 6px rgba(0,0,0,.07);text-align:center;
+}
+.pie-filter-row{
+  display:flex;gap:4px;justify-content:center;
+  margin-bottom:14px;background:var(--bg);
+  border-radius:10px;padding:3px;
+}
+.pie-tab{
+  flex:1;padding:8px 12px;border:none;border-radius:8px;
+  font-size:.82rem;font-weight:700;cursor:pointer;
+  background:transparent;color:var(--sub);transition:all .2s;
+}
+.pie-tab.active{background:var(--white);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.1);}
+.pie-legend{display:flex;justify-content:center;gap:18px;margin-top:12px;flex-wrap:wrap;}
+.pie-legend-item{display:flex;align-items:center;gap:5px;font-size:.78rem;font-weight:600;}
+.pie-dot{width:11px;height:11px;border-radius:50%;flex-shrink:0;}
+
 /* ── API KEY MODAL ── */
 .modal-overlay{
   position:fixed;inset:0;background:rgba(0,0,0,.5);
@@ -413,6 +443,18 @@ body{padding-bottom:var(--nav-h);}
     </button>
   </div>
 
+  <!-- Bear center home -->
+  <div class="home-bear-wrap" id="homeBear" onclick="runDong()">🐻</div>
+
+  <!-- Quick type box (moved here from บันทึก panel) -->
+  <div class="chat-box">
+    <div class="form-label" style="margin-bottom:8px;">⚡ พิมพ์สั้นๆ เช่น "ชาไข่มุก 65"</div>
+    <div style="display:flex;gap:8px;">
+      <input class="note-field" id="chatIn" placeholder="กินข้าว 80 / รับเงินเดือน 25000" style="margin:0;flex:1;min-width:0;" inputmode="text" autocomplete="off">
+      <button onclick="parseChat()" style="padding:0 18px;border:none;border-radius:12px;background:var(--pink);color:#fff;font-weight:700;cursor:pointer;white-space:nowrap;font-size:.88rem;flex-shrink:0;">➤</button>
+    </div>
+  </div>
+
   <div class="ie-grid">
     <div class="ie-card exp-card active" id="ieExp" onclick="switchSumTab('expense')">
       <div class="iec-label">รายจ่าย</div>
@@ -422,6 +464,16 @@ body{padding-bottom:var(--nav-h);}
       <div class="iec-label">รายรับ</div>
       <div class="iec-amount" id="ieIncAmt">฿0.00</div>
     </div>
+  </div>
+
+  <!-- Pie chart -->
+  <div class="pie-section">
+    <div class="pie-filter-row">
+      <button class="pie-tab active" id="pieTabDay"   onclick="setPiePeriod('day')">วันนี้</button>
+      <button class="pie-tab"        id="pieTabMonth" onclick="setPiePeriod('month')">เดือนนี้</button>
+    </div>
+    <canvas id="pieChart" width="180" height="180" style="max-width:180px;"></canvas>
+    <div class="pie-legend" id="pieLegend"></div>
   </div>
 
   <div class="sum-card">
@@ -481,14 +533,6 @@ body{padding-bottom:var(--nav-h);}
   <!-- Submit -->
   <button class="btn-add exp-btn" id="btnAdd" onclick="addEntry()">บันทึก ✓</button>
 
-  <!-- Chat shortcut -->
-  <div style="margin-top:14px;background:var(--white);border-radius:16px;padding:14px;box-shadow:0 1px 4px rgba(0,0,0,.05);">
-    <div class="form-label" style="margin-bottom:8px;">พิมพ์สั้นๆ เช่น "ชาไข่มุก 65"</div>
-    <div style="display:flex;gap:8px;">
-      <input class="note-field" id="chatIn" placeholder="กินข้าว 80 / รับเงินเดือน 25000" style="margin:0;flex:1;min-width:0;">
-      <button onclick="parseChat()" style="padding:0 16px;border:none;border-radius:12px;background:var(--pink);color:#fff;font-weight:700;cursor:pointer;white-space:nowrap;font-size:.88rem;">➤</button>
-    </div>
-  </div>
 
 </div>
 
@@ -641,6 +685,7 @@ let sumTab   = 'expense';
 let budgetTab= 'expense';
 let editCatId= null;
 let barTmrs  = [];
+let piePeriod= 'month';
 
 // ══════ INIT ══════
 function init(){
@@ -649,6 +694,13 @@ function init(){
   renderAll();
   renderBudgetList();
   initDong();
+  renderPieChart();
+  // chatIn Enter key + iPhone scroll fix
+  const ci=document.getElementById('chatIn');
+  if(ci){
+    ci.addEventListener('keydown',e=>{ if(e.key==='Enter') parseChat(); });
+    ci.addEventListener('focus',()=>{ setTimeout(()=>ci.scrollIntoView({behavior:'smooth',block:'center'}),300); });
+  }
 }
 
 function todayStr(){ return new Date().toISOString().slice(0,10); }
@@ -709,6 +761,7 @@ function renderAll(){
     '1 '+TH_MS[parseInt(m)-1]+' - '+new Date(now.getFullYear(),now.getMonth()+1,0).getDate()+' '+TH_MS[parseInt(m)-1]+' '+(parseInt(y)+543);
 
   renderCatRows();
+  renderPieChart();
 }
 
 let barTmrs2=[];
@@ -831,9 +884,6 @@ function parseChat(){
   document.getElementById('chatIn').value='';
   showToast(`${cat.icon} "${cat.name}" ฿${fmt0(amt)} บันทึกแล้ว!`);
 }
-document.addEventListener('DOMContentLoaded',()=>{
-  document.getElementById('chatIn').addEventListener('keydown',e=>{if(e.key==='Enter')parseChat();});
-});
 
 // ══════ BUDGET ══════
 function switchBudgetTab(tab){
@@ -928,6 +978,70 @@ function clearData(){
   entries=[];budgets={};save();renderAll();showToast('🗑️ ลบข้อมูลแล้ว');
 }
 
+// ══════ PIE CHART ══════
+function setPiePeriod(p){
+  piePeriod=p;
+  document.getElementById('pieTabDay').classList.toggle('active',p==='day');
+  document.getElementById('pieTabMonth').classList.toggle('active',p==='month');
+  renderPieChart();
+}
+
+function renderPieChart(){
+  const filter=piePeriod==='day'?todayStr():todayYM();
+  const data=entries.filter(e=>e.date.startsWith(filter));
+  const inc=data.filter(e=>e.type==='income').reduce((s,e)=>s+e.amount,0);
+  const exp=data.filter(e=>e.type==='expense').reduce((s,e)=>s+e.amount,0);
+  const total=inc+exp;
+
+  const canvas=document.getElementById('pieChart');
+  if(!canvas) return;
+  const ctx=canvas.getContext('2d');
+  const cx=canvas.width/2, cy=canvas.height/2;
+  const r=Math.min(cx,cy)-8;
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  if(total===0){
+    ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.fillStyle='#E5E5EA';ctx.fill();
+    ctx.beginPath();ctx.arc(cx,cy,r*0.55,0,Math.PI*2);ctx.fillStyle='#fff';ctx.fill();
+    ctx.fillStyle='#8E8E93';ctx.font='bold 12px -apple-system';
+    ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('ยังไม่มีข้อมูล',cx,cy);
+  } else {
+    const expAngle=(exp/total)*Math.PI*2;
+    const incAngle=(inc/total)*Math.PI*2;
+    const start=-Math.PI/2;
+    // Expense slice
+    if(exp>0){
+      ctx.beginPath();ctx.moveTo(cx,cy);
+      ctx.arc(cx,cy,r,start,start+expAngle);
+      ctx.closePath();ctx.fillStyle='#FF4785';ctx.fill();
+    }
+    // Income slice
+    if(inc>0){
+      ctx.beginPath();ctx.moveTo(cx,cy);
+      ctx.arc(cx,cy,r,start+expAngle,start+expAngle+incAngle);
+      ctx.closePath();ctx.fillStyle='#00C9A7';ctx.fill();
+    }
+    // Donut hole
+    ctx.beginPath();ctx.arc(cx,cy,r*0.56,0,Math.PI*2);ctx.fillStyle='#fff';ctx.fill();
+    // Center label
+    ctx.fillStyle='#1C1C1E';ctx.font='bold 13px -apple-system';
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText('฿'+fmt0(total),cx,cy);
+  }
+
+  // Legend
+  document.getElementById('pieLegend').innerHTML=`
+    <div class="pie-legend-item">
+      <div class="pie-dot" style="background:#FF4785;"></div>
+      <span>รายจ่าย ฿${fmt0(exp)}</span>
+    </div>
+    <div class="pie-legend-item">
+      <div class="pie-dot" style="background:#00C9A7;"></div>
+      <span>รายรับ ฿${fmt0(inc)}</span>
+    </div>
+  `;
+}
+
 // ══════ DONG ══════
 function initDong(){
   const h=new Date().getHours();
@@ -935,6 +1049,7 @@ function initDong(){
   document.getElementById('dong-run').textContent=emoji;
   document.getElementById('headerBear').textContent=emoji;
   document.getElementById('settingsBear').textContent=emoji;
+  document.getElementById('homeBear').textContent=emoji;
   document.getElementById('dong-run').onclick=()=>{
     const msgs=['돈노트: อย่าลืมบันทึกรายการด้วยนะ! ⭐','돈노트: วันนี้ประหยัดเก่งมาก 💰','돈노트: รักนายที่สุดเลย ⭐💕'];
     showToast(msgs[Math.floor(Math.random()*msgs.length)]);
