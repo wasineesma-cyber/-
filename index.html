@@ -881,7 +881,10 @@ function parseChat(){
   const cat=allCats.find(c=>c.id===catId)||allCats[0];
   entries.push({id:Date.now(),type,amount:amt,catId:cat.id,catIcon:cat.icon,catName:cat.name,note:text,date:todayStr()});
   save(); renderAll();
-  document.getElementById('chatIn').value='';
+  const ci=document.getElementById('chatIn');
+  ci.value='';
+  ci.blur();
+  setTimeout(()=>window.scrollTo({top:0,behavior:'smooth'}),100);
   showToast(`${cat.icon} "${cat.name}" ฿${fmt0(amt)} บันทึกแล้ว!`);
 }
 
