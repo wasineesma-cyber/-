@@ -4,7 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="theme-color" content="#ffffff">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Don Note">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#FF4785">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <title>돈노트 Don Note ⭐</title>
 <style>
 :root {
@@ -420,9 +426,58 @@ body{padding-bottom:var(--nav-h);}
 .modal-btns2 button{flex:1;padding:12px;border:none;border-radius:12px;font-size:.9rem;font-weight:700;cursor:pointer;}
 .btn-ms-save{background:var(--pink);color:#fff;}
 .btn-ms-cancel{background:var(--bg);color:var(--sub);}
+
+/* ── SPLASH SCREEN ── */
+#splash{
+  position:fixed;inset:0;z-index:9999;
+  background:#FF4785;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:16px;
+  transition:opacity .5s ease;
+}
+#splash.hide{opacity:0;pointer-events:none;}
+.splash-bear{font-size:72px;animation:splashBounce .7s ease infinite alternate;}
+.splash-title{color:#fff;font-size:1.5rem;font-weight:800;letter-spacing:.02em;}
+.splash-sub{color:rgba(255,255,255,.75);font-size:.85rem;letter-spacing:.05em;}
+@keyframes splashBounce{from{transform:translateY(0);}to{transform:translateY(-10px);}}
+
+/* ── INSTALL BANNER ── */
+#installBanner{
+  display:none;
+  position:fixed;bottom:calc(var(--nav-h) + 10px);left:12px;right:12px;z-index:800;
+  background:#fff;border-radius:16px;
+  box-shadow:0 4px 20px rgba(0,0,0,.12);
+  padding:14px 16px;
+  align-items:center;gap:12px;
+  border:1px solid var(--border);
+}
+#installBanner.show{display:flex;}
+.ib-icon{font-size:2rem;flex-shrink:0;}
+.ib-text{flex:1;}
+.ib-text strong{display:block;font-size:.9rem;font-weight:700;color:var(--text);}
+.ib-text span{font-size:.75rem;color:var(--sub);}
+.ib-btn{background:var(--pink);color:#fff;border:none;border-radius:10px;padding:8px 14px;font-size:.82rem;font-weight:700;cursor:pointer;white-space:nowrap;}
+.ib-close{background:none;border:none;color:var(--sub);font-size:1.2rem;cursor:pointer;padding:4px;flex-shrink:0;}
 </style>
 </head>
 <body>
+
+<!-- SPLASH SCREEN -->
+<div id="splash">
+  <div class="splash-bear">🐻</div>
+  <div class="splash-title">돈노트 Don Note</div>
+  <div class="splash-sub">โน้ตเงินสไตล์เกาหลี ⭐</div>
+</div>
+
+<!-- INSTALL BANNER (iOS) -->
+<div id="installBanner">
+  <div class="ib-icon">🐻</div>
+  <div class="ib-text">
+    <strong>เพิ่มไปหน้าจอหลัก</strong>
+    <span>แตะ ⬡ แล้วเลือก "เพิ่มลงในหน้าจอเริ่มต้น"</span>
+  </div>
+  <button class="ib-close" onclick="dismissInstall()">✕</button>
+</div>
 
 <!-- HEADER -->
 <div class="header">
@@ -1071,6 +1126,38 @@ function showToast(msg){
 }
 
 init();
+
+// ══════ SPLASH ══════
+window.addEventListener('load', () => {
+  const sp = document.getElementById('splash');
+  setTimeout(() => {
+    sp.classList.add('hide');
+    setTimeout(() => sp.remove(), 520);
+  }, 1400);
+});
+
+// ══════ INSTALL BANNER (iOS) ══════
+function isInStandalone() {
+  return window.navigator.standalone === true ||
+         window.matchMedia('(display-mode: standalone)').matches;
+}
+function dismissInstall() {
+  document.getElementById('installBanner').classList.remove('show');
+  localStorage.setItem('installDismissed', '1');
+}
+(function checkInstall() {
+  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  if (!isInStandalone() && isIOS && !localStorage.getItem('installDismissed')) {
+    setTimeout(() => {
+      document.getElementById('installBanner').classList.add('show');
+    }, 3000);
+  }
+})();
+
+// ══════ SERVICE WORKER ══════
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js').catch(() => {});
+}
 </script>
 </body>
 </html>
