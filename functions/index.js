@@ -1,18 +1,18 @@
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
-const line = require('@line/bot-sdk');
+// const line = require('@line/bot-sdk'); // ปิดไว้ก่อน
 const express = require('express');
 
 // ══════ FIREBASE ══════
 admin.initializeApp();
 const db = admin.firestore();
 
-// ══════ LINE CONFIG ══════
-const lineConfig = {
-  channelAccessToken: process.env.LINE_CHANNEL_ACCESS_TOKEN,
-  channelSecret: process.env.LINE_CHANNEL_SECRET,
-};
-const client = new line.Client(lineConfig);
+// ══════ LINE CONFIG (ปิดไว้ก่อน) ══════
+// const lineConfig = {
+//   channelAccessToken: process.env.LINE_CHANNEL_ACCESS_TOKEN,
+//   channelSecret: process.env.LINE_CHANNEL_SECRET,
+// };
+// const client = new line.Client(lineConfig);
 
 // ══════ CATEGORIES ══════
 const EXP_CATS = [
@@ -403,11 +403,16 @@ async function handleMessage(event) {
 // ══════ FIREBASE CLOUD FUNCTION ══════
 const app = express();
 
-app.post('/', line.middleware(lineConfig), (req, res) => {
+// LINE webhook ปิดไว้ก่อน
+// app.post('/', line.middleware(lineConfig), (req, res) => {
+//   res.sendStatus(200);
+//   (req.body.events || [])
+//     .filter(e => e.type === 'message' && e.message?.type === 'text')
+//     .forEach(e => handleMessage(e).catch(console.error));
+// });
+
+app.post('/', express.json(), (req, res) => {
   res.sendStatus(200);
-  (req.body.events || [])
-    .filter(e => e.type === 'message' && e.message?.type === 'text')
-    .forEach(e => handleMessage(e).catch(console.error));
 });
 
 exports.webhook = functions
