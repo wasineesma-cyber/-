@@ -7,25 +7,24 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Don Note">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="theme-color" content="#C17A3C">
+<meta name="theme-color" content="#FF4785">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
 <title>돈노트 Don Note ⭐</title>
 <style>
 :root {
-  --pink:       #C17A3C;
-  --pink-light: #FFF3E8;
-  --pink-border:#E8B87A;
-  --pink-track: #F5D5A0;
+  --pink:       #FF4785;
+  --pink-light: #FFF0F5;
+  --pink-border:#FFADD2;
+  --pink-track: #FFD6E7;
   --teal:       #00C9A7;
   --teal-light: #E8FAF7;
   --teal-border:#80E5D8;
   --teal-track: #B2F0E8;
-  --bg:         #FBF7F2;
+  --bg:         #F5F5F5;
   --white:      #FFFFFF;
   --text:       #1C1C1E;
   --sub:        #8E8E93;
@@ -439,7 +438,7 @@ body{padding-bottom:var(--nav-h);}
 /* ── SPLASH SCREEN ── */
 #splash{
   position:fixed;inset:0;z-index:9999;
-  background:#C17A3C;
+  background:#FF4785;
   display:flex;flex-direction:column;align-items:center;justify-content:center;
   gap:16px;
   transition:opacity .5s ease;
@@ -467,117 +466,20 @@ body{padding-bottom:var(--nav-h);}
 .ib-text span{font-size:.75rem;color:var(--sub);}
 .ib-btn{background:var(--pink);color:#fff;border:none;border-radius:10px;padding:8px 14px;font-size:.82rem;font-weight:700;cursor:pointer;white-space:nowrap;}
 .ib-close{background:none;border:none;color:var(--sub);font-size:1.2rem;cursor:pointer;padding:4px;flex-shrink:0;}
-
-/* ── LOGIN MODAL ── */
-.phone-modal-overlay{
-  position:fixed;inset:0;z-index:10000;
-  background:var(--bg);
-  display:flex;align-items:center;justify-content:center;
-  padding:24px;
-}
-.phone-modal-overlay.hidden{display:none;}
-.phone-modal{
-  background:var(--white);border-radius:24px;
-  padding:32px 24px;width:100%;max-width:360px;
-  box-shadow:0 8px 32px rgba(0,0,0,.1);
-  text-align:center;
-}
-.pm-bear{font-size:3.5rem;margin-bottom:8px;}
-.pm-title{font-size:1.2rem;font-weight:800;margin-bottom:4px;}
-.pm-sub{font-size:.82rem;color:var(--sub);margin-bottom:24px;line-height:1.5;}
-.pm-step{display:flex;flex-direction:column;gap:12px;}
-.pm-step.hidden{display:none;}
-.pm-label{font-size:.72rem;font-weight:700;color:var(--sub);text-align:left;text-transform:uppercase;letter-spacing:.05em;}
-.pm-phone-row{display:flex;gap:8px;align-items:center;}
-.pm-prefix{font-size:1rem;font-weight:700;color:var(--text);background:var(--bg);border:1.5px solid var(--border);border-radius:12px;padding:12px 14px;white-space:nowrap;}
-.pm-input{
-  flex:1;border:1.5px solid var(--border);border-radius:12px;
-  padding:12px 14px;font-size:1rem;font-family:inherit;
-  background:var(--white);color:var(--text);outline:none;
-  transition:border-color .2s;width:100%;
-}
-.pm-input:focus{border-color:var(--pink);}
-.pm-btn{
-  width:100%;padding:14px;border:none;border-radius:14px;
-  background:var(--pink);color:#fff;font-size:1rem;font-weight:800;
-  cursor:pointer;margin-top:4px;transition:opacity .2s;
-  display:flex;align-items:center;justify-content:center;gap:8px;
-}
-.pm-btn:disabled{opacity:.5;cursor:default;}
-.pm-btn-outline{
-  background:var(--white);color:var(--pink);
-  border:2px solid var(--pink);
-}
-.pm-otp-hint{font-size:.82rem;color:var(--sub);text-align:center;}
-.pm-back{background:none;border:none;color:var(--sub);font-size:.82rem;cursor:pointer;margin-top:4px;}
-.pm-toggle{font-size:.8rem;color:var(--sub);cursor:pointer;margin-top:4px;}
-.pm-toggle span{color:var(--pink);font-weight:700;text-decoration:underline;}
-.pm-error{font-size:.78rem;color:#FF3B30;text-align:left;display:none;}
-.pm-divider{display:flex;align-items:center;gap:10px;color:var(--sub);font-size:.75rem;}
-.pm-divider::before,.pm-divider::after{content:'';flex:1;border-top:1px solid var(--border);}
 </style>
 </head>
 <body>
 
-<!-- LOGIN MODAL -->
-<div id="phoneModal" class="phone-modal-overlay hidden">
-  <div class="phone-modal">
-    <div class="pm-bear">🐻</div>
-    <div class="pm-title">돈노트 Don Note</div>
-    <div class="pm-sub">เข้าสู่ระบบเพื่อให้ข้อมูล<br>ปลอดภัยแม้ลงแอปใหม่</div>
-
-    <!-- Step 0: เลือกวิธี -->
-    <div class="pm-step" id="pmChoiceStep">
-      <button class="pm-btn" onclick="showStep('phone')">📱 เบอร์มือถือ (OTP)</button>
-      <div class="pm-divider">หรือ</div>
-      <button class="pm-btn pm-btn-outline" onclick="showStep('email')">📧 อีเมล + รหัสผ่าน</button>
-    </div>
-
-    <!-- Step 1: เบอร์ -->
-    <div class="pm-step hidden" id="pmPhoneStep">
-      <div class="pm-label">เบอร์มือถือ (ไทย)</div>
-      <div class="pm-phone-row">
-        <div class="pm-prefix">🇹🇭 +66</div>
-        <input class="pm-input" id="phoneInput" type="tel" placeholder="0812345678" inputmode="numeric" maxlength="10">
-      </div>
-      <div class="pm-error" id="phoneError"></div>
-      <button class="pm-btn" id="sendOtpBtn" onclick="sendOtp()">ส่ง OTP ทาง SMS</button>
-      <button class="pm-back" onclick="showStep('choice')">← เลือกวิธีอื่น</button>
-    </div>
-
-    <!-- Step 2: OTP -->
-    <div class="pm-step hidden" id="pmOtpStep">
-      <div class="pm-otp-hint">ใส่รหัส 6 ตัวที่ได้รับทาง SMS</div>
-      <input class="pm-input" id="otpInput" type="tel" placeholder="123456" inputmode="numeric" maxlength="6" style="text-align:center;letter-spacing:.3em;font-size:1.6rem;font-weight:800;">
-      <div class="pm-error" id="otpError"></div>
-      <button class="pm-btn" id="verifyOtpBtn" onclick="verifyOtp()">✅ เข้าสู่ระบบ</button>
-      <button class="pm-back" onclick="showStep('phone')">← เปลี่ยนเบอร์</button>
-    </div>
-
-    <!-- Step 3: อีเมล -->
-    <div class="pm-step hidden" id="pmEmailStep">
-      <div class="pm-label" id="emailModeLabel">เข้าสู่ระบบด้วยอีเมล</div>
-      <input class="pm-input" id="emailInput" type="email" placeholder="bear@example.com" inputmode="email" autocomplete="email">
-      <input class="pm-input" id="passInput" type="password" placeholder="รหัสผ่าน (6 ตัวขึ้นไป)" autocomplete="current-password">
-      <div class="pm-error" id="emailError"></div>
-      <button class="pm-btn" id="emailAuthBtn" onclick="emailAuth()">เข้าสู่ระบบ</button>
-      <div class="pm-toggle" id="emailToggle" onclick="toggleEmailMode()">ยังไม่มีบัญชี? <span>สมัครสมาชิก</span></div>
-      <button class="pm-back" onclick="showStep('choice')">← เลือกวิธีอื่น</button>
-    </div>
-  </div>
-</div>
-<div id="recaptcha-container" style="position:fixed;bottom:0;left:0;z-index:9999;"></div>
-
 <!-- SPLASH SCREEN -->
 <div id="splash">
-  <div class="splash-bear">🐻</div>
+  <div class="splash-bear">🐼</div>
   <div class="splash-title">돈노트 Don Note</div>
   <div class="splash-sub">โน้ตเงินสไตล์เกาหลี ⭐</div>
 </div>
 
 <!-- INSTALL BANNER (iOS) -->
 <div id="installBanner">
-  <div class="ib-icon">🐻</div>
+  <div class="ib-icon">🐼</div>
   <div class="ib-text">
     <strong>เพิ่มไปหน้าจอหลัก</strong>
     <span>แตะ ⬡ แล้วเลือก "เพิ่มลงในหน้าจอเริ่มต้น"</span>
@@ -587,7 +489,7 @@ body{padding-bottom:var(--nav-h);}
 
 <!-- HEADER -->
 <div class="header">
-  <div class="header-bear" id="headerBear">🐻</div>
+  <div class="header-bear" id="headerBear">🐼</div>
   <div class="header-title">돈노트 Don Note ⭐</div>
   <div class="header-right" id="headerRight"></div>
 </div>
@@ -605,7 +507,7 @@ body{padding-bottom:var(--nav-h);}
   </div>
 
   <!-- Bear center home -->
-  <div class="home-bear-wrap" id="homeBear" onclick="runDong()">🐻</div>
+  <div class="home-bear-wrap" id="homeBear" onclick="runDong()">🐼</div>
 
   <!-- Quick type box (moved here from บันทึก panel) -->
   <div class="chat-box">
@@ -702,12 +604,12 @@ body{padding-bottom:var(--nav-h);}
 
   <div class="budget-header">จัดการหมวดและงบ</div>
 
-  <div class="period-setting-card" onclick="cyclePeriod()" style="cursor:pointer;">
+  <div class="period-setting-card">
     <div class="psc-left">
       <div class="psc-title">รอบตัดงบ</div>
-      <div class="psc-val" id="periodCardVal">📅 รายเดือน (วันที่ 1)</div>
+      <div class="psc-val">📅 รายเดือน (วันที่ 1)</div>
     </div>
-    <button class="btn-small">⇄ สลับ</button>
+    <button class="btn-small">✏️ ตั้งค่า</button>
   </div>
 
   <div class="budget-type-tabs">
@@ -735,7 +637,7 @@ body{padding-bottom:var(--nav-h);}
 <!-- ════════ PANEL: ตั้งค่า ════════ -->
 <div class="panel" id="panel-settings">
   <div style="text-align:center;padding:20px 0 16px;">
-    <div id="settingsBear" style="font-size:3.5rem;cursor:pointer;" onclick="runDong()">🐻</div>
+    <div id="settingsBear" style="font-size:3.5rem;cursor:pointer;" onclick="runDong()">🐼</div>
     <div style="font-size:1rem;font-weight:700;margin-top:6px;">돈노트 Don Note ⭐</div>
     <div style="font-size:.75rem;color:var(--sub);margin-top:2px;">v2.0 · โน้ตเงินสไตล์เกาหลี</div>
   </div>
@@ -744,11 +646,12 @@ body{padding-bottom:var(--nav-h);}
     <div class="si2">
       <div class="si2-left"><div class="si2-label">☁️ สถานะ Firebase</div><div class="si2-sub" id="cloudStatusSub">⏳ กำลังเชื่อมต่อ...</div></div>
     </div>
-    <div class="si2">
-      <div class="si2-left"><div class="si2-label">👤 บัญชีที่ล็อกอิน</div><div class="si2-sub" id="userPhoneDisplay">-</div></div>
+    <div class="si2" onclick="copyUserId()">
+      <div class="si2-left"><div class="si2-label">🔑 User ID ของคุณ</div><div class="si2-sub" id="userIdDisplay">-</div></div>
+      <div class="si2-right">📋</div>
     </div>
-    <div class="si2" onclick="signOutUser()" style="cursor:pointer;">
-      <div class="si2-left"><div class="si2-label" style="color:var(--pink);">🚪 ออกจากระบบ</div><div class="si2-sub">ข้อมูลยังอยู่ใน Firebase ปลอดภัย</div></div>
+    <div class="si2" onclick="changeUserId()">
+      <div class="si2-left"><div class="si2-label">🔄 ซิงค์จากเครื่องอื่น</div><div class="si2-sub">ใส่ User ID เครื่องเก่าเพื่อดึงข้อมูล</div></div>
       <div class="si2-right">›</div>
     </div>
   </div>
@@ -838,7 +741,7 @@ function doGet(){return ContentService.createTextOutput(JSON.stringify({status:'
 </div>
 
 <!-- Running dong -->
-<div id="dong-run">🐻</div>
+<div id="dong-run">🐼</div>
 
 <div class="toast" id="toast"></div>
 
@@ -854,138 +757,12 @@ const firebaseConfig = {
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
-const auth = firebase.auth();
 
-// ══════ AUTH STATE ══════
-let userId = null;
-let confirmResult = null;
-let recapVerifier = null;
-let emailMode = 'login'; // 'login' | 'register'
-
-auth.onAuthStateChanged(user => {
-  if (user) {
-    userId = user.uid;
-    document.getElementById('phoneModal').classList.add('hidden');
-    const ph = document.getElementById('userPhoneDisplay');
-    if (ph) ph.textContent = user.phoneNumber || user.email || userId.slice(0,16)+'...';
-    init();
-  } else {
-    showStep('choice');
-    document.getElementById('phoneModal').classList.remove('hidden');
-  }
-});
-
-function showStep(step) {
-  ['pmChoiceStep','pmPhoneStep','pmOtpStep','pmEmailStep'].forEach(id => {
-    document.getElementById(id).classList.add('hidden');
-  });
-  const map = {choice:'pmChoiceStep', phone:'pmPhoneStep', otp:'pmOtpStep', email:'pmEmailStep'};
-  if (map[step]) document.getElementById(map[step]).classList.remove('hidden');
-}
-
-function setErr(id, msg) {
-  const el = document.getElementById(id);
-  if (!el) return;
-  el.textContent = msg;
-  el.style.display = msg ? 'block' : 'none';
-}
-
-// ── Phone OTP ──
-async function sendOtp() {
-  setErr('phoneError','');
-  const raw = document.getElementById('phoneInput').value.trim().replace(/\D/g,'');
-  if (raw.length < 9) { setErr('phoneError','ใส่เบอร์ให้ครบ 9-10 หลักก่อนนะ'); return; }
-  let num = raw.startsWith('0') ? '+66'+raw.slice(1) : (raw.startsWith('66') ? '+'+raw : '+66'+raw);
-
-  if (!recapVerifier) {
-    recapVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {size:'invisible'});
-    await recapVerifier.render();
-  }
-  const btn = document.getElementById('sendOtpBtn');
-  btn.disabled = true; btn.textContent = '⏳ กำลังส่ง...';
-  try {
-    confirmResult = await auth.signInWithPhoneNumber(num, recapVerifier);
-    showStep('otp');
-    document.getElementById('otpInput').focus();
-  } catch(e) {
-    console.error('sendOtp:', e);
-    const msgs = {
-      'auth/invalid-phone-number': 'เบอร์โทรไม่ถูกต้อง',
-      'auth/too-many-requests': 'ส่ง OTP บ่อยเกินไป รอสักครู่',
-      'auth/operation-not-allowed': 'Phone Auth ยังไม่ได้เปิดใน Firebase Console',
-      'auth/captcha-check-failed': 'reCAPTCHA ล้มเหลว ลองรีเฟรชหน้า',
-    };
-    setErr('phoneError', msgs[e.code] || e.message);
-    btn.disabled = false; btn.textContent = 'ส่ง OTP ทาง SMS';
-    if (recapVerifier) { recapVerifier.clear(); recapVerifier = null; }
-  }
-}
-
-async function verifyOtp() {
-  setErr('otpError','');
-  const code = document.getElementById('otpInput').value.trim();
-  if (code.length !== 6) { setErr('otpError','ใส่รหัส 6 หลักก่อนนะ'); return; }
-  const btn = document.getElementById('verifyOtpBtn');
-  btn.disabled = true; btn.textContent = '⏳ กำลังตรวจสอบ...';
-  try {
-    await confirmResult.confirm(code);
-    // onAuthStateChanged fires → calls init()
-  } catch(e) {
-    console.error('verifyOtp:', e);
-    setErr('otpError', e.code === 'auth/invalid-verification-code' ? 'รหัสไม่ถูก ลองใหม่นะ' : e.message);
-    btn.disabled = false; btn.textContent = '✅ เข้าสู่ระบบ';
-  }
-}
-
-// ── Email Auth ──
-function toggleEmailMode() {
-  emailMode = emailMode === 'login' ? 'register' : 'login';
-  document.getElementById('emailModeLabel').textContent =
-    emailMode === 'register' ? 'สมัครสมาชิกใหม่' : 'เข้าสู่ระบบด้วยอีเมล';
-  document.getElementById('emailAuthBtn').textContent =
-    emailMode === 'register' ? 'สมัครสมาชิก' : 'เข้าสู่ระบบ';
-  document.getElementById('emailToggle').innerHTML =
-    emailMode === 'register' ? 'มีบัญชีแล้ว? <span>เข้าสู่ระบบ</span>' : 'ยังไม่มีบัญชี? <span>สมัครสมาชิก</span>';
-  document.getElementById('passInput').autocomplete =
-    emailMode === 'register' ? 'new-password' : 'current-password';
-  setErr('emailError','');
-}
-
-async function emailAuth() {
-  setErr('emailError','');
-  const email = document.getElementById('emailInput').value.trim();
-  const pass  = document.getElementById('passInput').value;
-  if (!email.includes('@')) { setErr('emailError','ใส่อีเมลให้ถูกต้อง'); return; }
-  if (pass.length < 6)       { setErr('emailError','รหัสผ่านต้องมีอย่างน้อย 6 ตัว'); return; }
-  const btn = document.getElementById('emailAuthBtn');
-  btn.disabled = true; btn.textContent = '⏳ กำลังตรวจสอบ...';
-  try {
-    if (emailMode === 'register') {
-      await auth.createUserWithEmailAndPassword(email, pass);
-    } else {
-      await auth.signInWithEmailAndPassword(email, pass);
-    }
-    // onAuthStateChanged fires → calls init()
-  } catch(e) {
-    console.error('emailAuth:', e);
-    const msgs = {
-      'auth/user-not-found':        'ไม่พบบัญชีนี้ ลองกด "สมัครสมาชิก"',
-      'auth/wrong-password':        'รหัสผ่านไม่ถูก ลองใหม่นะ',
-      'auth/email-already-in-use':  'อีเมลนี้มีบัญชีแล้ว ลองเข้าสู่ระบบ',
-      'auth/weak-password':         'รหัสผ่านสั้นเกินไป ใส่ 6 ตัวขึ้นไป',
-      'auth/invalid-email':         'รูปแบบอีเมลไม่ถูกต้อง',
-      'auth/operation-not-allowed': 'Email Auth ยังไม่ได้เปิดใน Firebase Console',
-      'auth/invalid-credential':    'อีเมลหรือรหัสผ่านไม่ถูกต้อง',
-    };
-    setErr('emailError', msgs[e.code] || e.message);
-    btn.disabled = false;
-    btn.textContent = emailMode === 'register' ? 'สมัครสมาชิก' : 'เข้าสู่ระบบ';
-  }
-}
-
-async function signOutUser() {
-  if (!confirm('ออกจากระบบ? ข้อมูลยังอยู่ใน Firebase ปลอดภัย 🐻')) return;
-  await auth.signOut();
+// Generate/get unique user ID (no login needed)
+let userId = localStorage.getItem('dong_uid');
+if (!userId) {
+  userId = 'u' + Math.random().toString(36).substr(2,9) + Date.now().toString(36);
+  localStorage.setItem('dong_uid', userId);
 }
 
 async function saveToCloud() {
@@ -1022,6 +799,21 @@ function updateCloudStatus(msg) {
   if (el) el.textContent = msg;
 }
 
+function copyUserId() {
+  navigator.clipboard?.writeText(userId).then(()=>showToast('📋 คัดลอก User ID แล้ว!')).catch(()=>{});
+}
+
+async function changeUserId() {
+  const newId = prompt('ใส่ User ID จากเครื่องอื่น:');
+  if (!newId || !newId.trim()) return;
+  userId = newId.trim();
+  localStorage.setItem('dong_uid', userId);
+  updateCloudStatus('⏳ กำลังโหลด...');
+  await loadFromCloud();
+  renderAll(); renderBudgetList();
+  document.getElementById('userIdDisplay').textContent = userId.slice(0,16)+'...';
+  showToast('✅ เปลี่ยน User ID แล้ว!');
+}
 
 // ══════ CONSTANTS ══════
 const EXP_CATS = [
@@ -1056,7 +848,6 @@ const TH_MS = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','ม
 // ══════ STATE ══════
 let entries  = JSON.parse(localStorage.getItem('dong_entries') || '[]');
 let budgets  = JSON.parse(localStorage.getItem('dong_budgets') || '{}'); // {catId: amount}
-let periodMode = localStorage.getItem('dong_period') || 'month'; // 'month' | 'week'
 let addType  = 'expense';
 let selCatId = 'food';
 let sumTab   = 'expense';
@@ -1127,16 +918,15 @@ async function syncToSheet(){
 // ══════ INIT ══════
 function init(){
   document.getElementById('filterMonth').value = todayYM();
-  const card=document.getElementById('periodCardVal');
-  if(card) card.textContent=periodMode==='week'?'📅 รายอาทิตย์':'📅 รายเดือน (วันที่ 1)';
   renderCatGrid2();
   renderAll();
   renderBudgetList();
   initDong();
   renderPieChart();
   updateSheetSubLabel();
-  const ph = document.getElementById('userPhoneDisplay');
-  if (ph && auth.currentUser) ph.textContent = auth.currentUser.phoneNumber || '-';
+  // Show user ID in settings
+  const uid = document.getElementById('userIdDisplay');
+  if(uid) uid.textContent = userId.slice(0,16)+'...';
   updateCloudStatus('⏳ กำลังซิงค์...');
   // chatIn Enter key + iPhone scroll fix
   const ci=document.getElementById('chatIn');
@@ -1170,44 +960,9 @@ function goPanel(id){
   if(id==='panel-budget') renderBudgetList();
 }
 
-// ══════ PERIOD (month / week) ══════
-function getWeekBounds(){
-  const now=new Date();
-  const day=now.getDay();
-  const mon=new Date(now);
-  mon.setDate(now.getDate()-(day===0?6:day-1));
-  mon.setHours(0,0,0,0);
-  const sun=new Date(mon);
-  sun.setDate(mon.getDate()+6);
-  sun.setHours(23,59,59,999);
-  return {mon,sun};
-}
-
-function filterByPeriod(arr){
-  if(periodMode==='week'){
-    const {mon,sun}=getWeekBounds();
-    return arr.filter(e=>{const d=new Date(e.date);return d>=mon&&d<=sun;});
-  }
-  return arr.filter(e=>e.date.startsWith(todayYM()));
-}
-
-function getPeriodLabel(){
-  if(periodMode==='week'){
-    const {mon,sun}=getWeekBounds();
-    return mon.getDate()+' '+TH_MS[mon.getMonth()]+' - '+sun.getDate()+' '+TH_MS[sun.getMonth()];
-  }
-  const ym=todayYM();
-  const [y,m]=ym.split('-');
-  const lastDay=new Date(parseInt(y),parseInt(m),0).getDate();
-  return '1 '+TH_MS[parseInt(m)-1]+' - '+lastDay+' '+TH_MS[parseInt(m)-1]+' '+(parseInt(y)+543);
-}
-
+// ══════ PERIOD (simple: this month) ══════
 function cyclePeriod(){
-  periodMode=periodMode==='month'?'week':'month';
-  localStorage.setItem('dong_period',periodMode);
-  const card=document.getElementById('periodCardVal');
-  if(card) card.textContent=periodMode==='week'?'📅 รายอาทิตย์':'📅 รายเดือน (วันที่ 1)';
-  renderAll();
+  showToast('🐼 ฟีเจอร์หลายรอบงบกำลังมาเร็วๆ นี้!');
 }
 
 // ══════ SUMMARY TAB ══════
@@ -1222,7 +977,8 @@ function switchSumTab(tab){
 
 // ══════ RENDER ALL ══════
 function renderAll(){
-  const md=filterByPeriod(entries);
+  const ym=todayYM();
+  const md=entries.filter(e=>e.date.startsWith(ym));
   const inc=md.filter(e=>e.type==='income').reduce((s,e)=>s+e.amount,0);
   const exp=md.filter(e=>e.type==='expense').reduce((s,e)=>s+e.amount,0);
   const bal=inc-exp;
@@ -1233,7 +989,11 @@ function renderAll(){
   el.textContent=(bal<0?'-':'')+'฿'+fmt(Math.abs(bal));
   el.className='balance-amount '+(bal<0?'negative':bal>0?'positive':'');
 
-  document.getElementById('periodLabel').textContent=getPeriodLabel();
+  // period label
+  const now=new Date();
+  const [y,m]=ym.split('-');
+  document.getElementById('periodLabel').textContent=
+    '1 '+TH_MS[parseInt(m)-1]+' - '+new Date(now.getFullYear(),now.getMonth()+1,0).getDate()+' '+TH_MS[parseInt(m)-1]+' '+(parseInt(y)+543);
 
   renderCatRows();
   renderPieChart();
@@ -1242,7 +1002,8 @@ function renderAll(){
 let barTmrs2=[];
 function renderCatRows(){
   barTmrs2.forEach(clearTimeout); barTmrs2=[];
-  const md=filterByPeriod(entries).filter(e=>e.type===sumTab);
+  const ym=todayYM();
+  const md=entries.filter(e=>e.date.startsWith(ym)&&e.type===sumTab);
   const catMap={};
   md.forEach(e=>{ catMap[e.catId]=(catMap[e.catId]||0)+e.amount; });
   const total=Object.values(catMap).reduce((s,v)=>s+v,0);
@@ -1314,7 +1075,7 @@ function setAmt(v){
 
 function addEntry(){
   const amt=parseFloat(document.getElementById('inputAmt').value);
-  if(!amt||amt<=0){ showToast('ใส่จำนวนเงินก่อนนะ 🐻'); return; }
+  if(!amt||amt<=0){ showToast('ใส่จำนวนเงินก่อนนะ 🐼'); return; }
   const note=document.getElementById('noteField').value.trim();
   const allCats=[...EXP_CATS,...INC_CATS];
   const cat=allCats.find(c=>c.id===selCatId)||allCats[0];
@@ -1462,7 +1223,7 @@ function renderHistory(){
   if(ft!=='all') data=data.filter(e=>e.type===ft);
   data.sort((a,b)=>b.date.localeCompare(a.date)||b.id-a.id);
   const c=document.getElementById('txList2');
-  if(!data.length){c.innerHTML=`<div class="empty2">🐻<br><br>ยังไม่มีรายการเลยนะ</div>`;return;}
+  if(!data.length){c.innerHTML=`<div class="empty2">🐼<br><br>ยังไม่มีรายการเลยนะ</div>`;return;}
   c.innerHTML=data.map(e=>`
     <div class="tx2 ${e.type}">
       <div class="tx2-icon">${e.catIcon||'💰'}</div>
@@ -1522,7 +1283,7 @@ function renderPieChart(){
     if(exp>0){
       ctx.beginPath();ctx.moveTo(cx,cy);
       ctx.arc(cx,cy,r,start,start+expAngle);
-      ctx.closePath();ctx.fillStyle='#C17A3C';ctx.fill();
+      ctx.closePath();ctx.fillStyle='#FF4785';ctx.fill();
     }
     // Income slice
     if(inc>0){
@@ -1554,7 +1315,7 @@ function renderPieChart(){
 // ══════ DONG ══════
 function initDong(){
   const h=new Date().getHours();
-  const emoji=h<6?'🐻‍❄️':h<12?'🐻‍❄️':h<18?'🐻':h<22?'🐻':'🐻';
+  const emoji=h<6?'🐼‍❄️':h<12?'🐼‍❄️':h<18?'🐼':h<22?'🐼':'🐼';
   document.getElementById('dong-run').textContent=emoji;
   document.getElementById('headerBear').textContent=emoji;
   document.getElementById('settingsBear').textContent=emoji;
@@ -1576,7 +1337,7 @@ function showToast(msg){
   setTimeout(()=>t.classList.remove('show'),2500);
 }
 
-// init() is called by auth.onAuthStateChanged when user signs in
+init();
 
 // ══════ SPLASH ══════
 window.addEventListener('load', () => {

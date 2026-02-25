@@ -4,8 +4,8 @@
   "description": "โน้ตเงินสไตล์เกาหลี 🐻",
   "start_url": "./",
   "display": "standalone",
-  "background_color": "#FBF7F2",
-  "theme_color": "#C17A3C",
+  "background_color": "#ffffff",
+  "theme_color": "#FF4785",
   "orientation": "portrait-primary",
   "icons": [
     {
