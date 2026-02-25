@@ -690,7 +690,7 @@ body{padding-bottom:var(--nav-h);}
       <div class="si2-left"><div class="si2-label">📊 เชื่อม Google Sheet</div><div class="si2-sub" id="sheetUrlSub">ยังไม่ได้เชื่อม</div></div>
       <div class="si2-right">›</div>
     </div>
-    <div class="si2" onclick="syncToSheet()">
+    <div class="si2" onclick="syncToSheet(  if(!canUse('sheetSync')) { showToast('🔒 ซิงค์ Sheet สำหรับ Pro'); return; })">
       <div class="si2-left"><div class="si2-label">🔄 ซิงค์ข้อมูลไป Sheet</div><div class="si2-sub" id="syncStatusSub">กดเพื่อส่งข้อมูลทั้งหมด</div></div>
       <div class="si2-right">›</div>
     </div>
