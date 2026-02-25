@@ -675,15 +675,6 @@ body{padding-bottom:var(--nav-h);}
   </div>
   <div class="settings-card">
     <div class="sc-title">ข้อมูล</div>
-    <div class="si2" onclick="exportData()">
-      <div class="si2-left"><div class="si2-label">💾 สำรองข้อมูล</div><div class="si2-sub">ดาวน์โหลด JSON backup</div></div>
-      <div class="si2-right">›</div>
-    </div>
-    <div class="si2" onclick="document.getElementById('restoreInput').click()">
-      <div class="si2-left"><div class="si2-label">📥 คืนค่าข้อมูล</div><div class="si2-sub">นำเข้าไฟล์ backup</div></div>
-      <div class="si2-right">›</div>
-    </div>
-    <input type="file" id="restoreInput" style="display:none" accept=".json" onchange="importData(event)">
     <div class="si2" onclick="clearData()">
       <div class="si2-left"><div class="si2-label" style="color:var(--pink);">🗑️ ลบข้อมูลทั้งหมด</div><div class="si2-sub">ไม่สามารถกู้คืนได้</div></div>
       <div class="si2-right">›</div>
@@ -1281,15 +1272,6 @@ function closeApiModal(){ document.getElementById('apiModal').classList.add('hid
 function saveApiKey(){
   localStorage.setItem('dong_api_key',document.getElementById('apiKeyInput').value.trim());
   closeApiModal(); showToast('✅ บันทึก API Key แล้ว');
-}
-function exportData(){
-  const b=new Blob([JSON.stringify({entries,budgets})],{type:'application/json'});
-  const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='dongdong_backup.json';a.click();
-}
-function importData(ev){
-  const r=new FileReader();
-  r.onload=e=>{try{const d=JSON.parse(e.target.result);entries=d.entries||[];budgets=d.budgets||{};save();renderAll();showToast('✅ คืนค่าแล้ว');}catch{showToast('❌ ไฟล์ไม่ถูกต้อง');}};
-  r.readAsText(ev.target.files[0]);
 }
 function clearData(){
   if(!confirm('ลบข้อมูลทั้งหมดไหม?'))return;
