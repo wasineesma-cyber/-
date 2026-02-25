@@ -5,61 +5,118 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>돈노트 Don Note ⭐</title>
 <style>
-/* CSS เดิมทั้งหมดของคุณ (ไม่เปลี่ยน) */
+/* ... CSS เดิมทั้งหมดของคุณ (ฉันไม่เปลี่ยน) ... */
+
+/* ===== PRO MODAL (สวยเหมือนภาพ) ===== */
+#proModal { position:fixed; inset:0; background:rgba(0,0,0,0.6); display:flex; align-items:flex-end; z-index:999; }
+#proModal.hidden { display:none; }
+.pro-sheet {
+  background:#fff; width:100%; max-width:480px; border-radius:24px 24px 0 0;
+  padding:24px 20px 40px; text-align:center; box-shadow:0 -4px 20px rgba(0,0,0,0.1);
+}
+.pro-badge { background:linear-gradient(90deg,#FF4785,#FF9A9E); color:#fff; padding:4px 14px; border-radius:20px; font-size:0.75rem; font-weight:800; display:inline-block; margin-bottom:12px; }
+.pro-title { font-size:1.35rem; font-weight:900; margin:8px 0 6px; }
+.pro-price { font-size:2.2rem; font-weight:900; color:#FF4785; }
+.pro-desc { font-size:0.9rem; color:#666; margin:16px 0 24px; line-height:1.5; }
+.pro-btn {
+  width:100%; padding:16px; border:none; border-radius:16px; font-size:1.1rem; font-weight:800;
+  background:linear-gradient(90deg,#FF4785,#FF9A9E); color:#fff; margin-bottom:12px;
+}
+.pro-gift { background:#fff; border:2px solid #FF4785; color:#FF4785; }
 </style>
 </head>
 <body>
-<!-- ... HTML เดิมทั้งหมด ... -->
+<!-- ... HTML เดิมทั้งหมดของคุณ (header, panels, bottom-nav) ... -->
 
-<!-- SPLASH (หมีดองดอง) -->
-<div id="splash">
-  <div class="splash-bear">🐻</div>
-  <div class="splash-title">หมีดองดอง Don Note</div>
-  <div class="splash-sub">โน้ตเงินสไตล์เกาหลี ⭐</div>
-</div>
-
-<!-- HEADER -->
-<div class="header">
-  <div class="header-bear" id="headerBear">🐻</div>
-  <div class="header-title">หมีดองดอง Don Note ⭐</div>
-</div>
-
-<!-- PRO MODAL (ปรับให้เป็นหมีดองดอง) -->
+<!-- ===== PRO UPGRADE MODAL ===== -->
 <div id="proModal" class="hidden">
   <div class="pro-sheet">
     <div class="pro-badge">หลานโปร</div>
-    <div class="pro-title">ปลดล็อกทุกฟีเจอร์กับหมีดองดอง</div>
-    <div style="font-size:4rem;margin:12px 0;">🐻</div>
-    <div class="pro-price">฿65 <span style="font-size:0.9rem;">/เดือน</span></div>
-    <!-- ... ส่วนที่เหลือเหมือนเดิม ... -->
+    <div class="pro-title">ปลดล็อกทุกฟีเจอร์พรีเมียม</div>
+    <img src="https://i.imgur.com/0kZfJqL.png" style="width:120px;margin:12px 0;"> <!-- เปลี่ยนเป็นรูปหลานโปรของคุณได้ -->
+    <div class="pro-price">฿65 <span style="font-size:0.9rem;font-weight:400;">/เดือน</span></div>
+    <div class="pro-desc">
+      • ส่งออก Excel<br>
+      • เหมียวโกลด์ AI (Claude)<br>
+      • รายงานปี + กราฟขั้นสูง<br>
+      • หมวดไม่จำกัด + Voice/Input ภาพ<br>
+      • Backup อัตโนมัติ + ไม่มีโฆษณา
+    </div>
+    <button class="pro-btn" onclick="upgradeToPro()">อัพเกรดเป็นหลานโปร</button>
+    <button class="pro-btn pro-gift" onclick="alert('ส่งลิงก์ของขวัญให้เพื่อนแล้วค่ะ 💝')">ซื้อเป็นของขวัญให้เพื่อน</button>
+    <div onclick="document.getElementById('proModal').classList.add('hidden')" style="color:#999;margin-top:16px;cursor:pointer;">ปิด</div>
   </div>
 </div>
 
-<script>
-// เปลี่ยนทุกตัว 🐼 เป็น 🐻 + เพิ่มชื่อหมีดองดอง
-// ค้นหาแล้วแทนที่ทั้งหมด (ฉันทำให้แล้ว)
+<!-- ===== เหมียวโกลด์ BANNER (ใน settings) ===== -->
+<!-- วางใน panel-settings ตรง <div class="settings-card"> ตัวที่ 2 -->
 
+<div class="si2" onclick="openMeowGold()">
+  <div class="si2-left">
+    <div class="si2-label">🐱 เหมียวโกลด์ AI</div>
+    <div class="si2-sub">สร้างหมวด วิเคราะห์งบด้วย Claude</div>
+  </div>
+  <div class="si2-right">›</div>
+</div>
+
+<script>
+// ===== เพิ่มตรงต้น script =====
 let isPro = localStorage.getItem('don_pro') === 'true';
 
-// ในฟังก์ชัน initDong()
-function initDong(){
-  document.getElementById('dong-run').textContent = '🐻';
-  document.getElementById('headerBear').textContent = '🐻';
-  document.getElementById('settingsBear').textContent = '🐻';
-  document.getElementById('homeBear').textContent = '🐻';
+function showProModal() {
+  document.getElementById('proModal').classList.remove('hidden');
 }
 
-// ใน renderProBadge()
+function upgradeToPro() {
+  isPro = true;
+  localStorage.setItem('don_pro', 'true');
+  document.getElementById('proModal').classList.add('hidden');
+  showToast('🎉 ยินดีด้วย! คุณเป็น Don Note Pro แล้ว');
+  renderAll(); // refresh UI
+}
+
+function checkPro(feature) {
+  if (isPro) return true;
+  showToast(`🔒 ${feature} ใช้ได้เฉพาะ Pro เท่านั้น`);
+  showProModal();
+  return false;
+}
+
+// ===== ล็อกปุ่มต่าง ๆ =====
+// ตัวอย่างใน settings (Claude API)
+document.querySelectorAll('.si2')[0].onclick = () => { // แก้ index ให้ตรง
+  if (checkPro('Claude API')) { /* โค้ดเดิม */ }
+};
+
+// ปุ่มส่งออกใน history
+function exportData() {
+  if (!checkPro('ส่งออกข้อมูล')) return;
+  // โค้ดส่งออกเดิม
+}
+
+// เหมียวโกลด์
+function openMeowGold() {
+  if (!checkPro('เหมียวโกลด์ AI')) return;
+  showToast('🐱 เหมียวโกลด์พร้อมช่วยแล้ว! พิมพ์คำสั่งได้เลย (ทดลองฟรี 14 วัน)');
+  // ต่อไปค่อยทำ modal chat จริง
+}
+
+// ===== แสดง badge Pro =====
 function renderProBadge() {
   const header = document.querySelector('.header-title');
-  if (isPro) header.innerHTML = 'หมีดองดอง Don Note <span style="font-size:0.7rem;background:#FF4785;color:#fff;padding:2px 6px;border-radius:8px;">Pro</span>';
+  if (isPro) header.innerHTML = 'Don Note <span style="font-size:0.7rem;background:#FF4785;color:#fff;padding:2px 6px;border-radius:8px;">Pro</span>';
 }
+renderProBadge(); // เรียกตอน init
 
-// Splash & Login
-document.querySelector('.splash-title').textContent = 'หมีดองดอง Don Note ⭐';
-document.querySelector('.ll-title').textContent = 'หมีดองดอง Don Note ⭐';
-
-// ทุกที่ที่เคยมี 🐼 ฉันเปลี่ยนเป็น 🐻 แล้วทั้งหมด
+// ===== Banner ชวน Pro ที่หน้า home (ถ้ายังไม่ Pro) =====
+if (!isPro) {
+  const homePanel = document.getElementById('panel-home');
+  const banner = document.createElement('div');
+  banner.style = 'background:linear-gradient(90deg,#FF4785,#FF9A9E);color:#fff;padding:12px;margin:12px;border-radius:16px;text-align:center;font-weight:700;cursor:pointer;';
+  banner.innerHTML = '🔓 อัพเกรด Pro วันนี้ รับเหมียวโกลด์ฟรี 14 วัน!';
+  banner.onclick = showProModal;
+  homePanel.insertBefore(banner, homePanel.children[2]);
+}
 </script>
 </body>
 </html>
