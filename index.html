@@ -577,16 +577,31 @@ body{padding-bottom:var(--nav-h);}
       <div class="sum-card-title exp-title" id="sumCardTitle">สรุปรายจ่าย</div>
       <div style="width:44px;"></div>
     </div>
-    <div id="catRows"></div>
-    <button class="btn-manage" onclick="goPanel('panel-budget')">
-      ✏️ จัดการหมวดและงบ
-    </button>
-    <button class="invite-banner">
-      ชวนเพื่อนมาเป็น
-      <span class="invite-badge">Don Note Pro</span>
-      รับฟรี 1 เดือน
-    </button>
+<div class="panel" id="panel-budget">
+  <div class="budget-header">จัดการหมวดและงบ</div>
+
+  <div class="period-setting-card">
+    <div class="psc-left">
+      <div class="psc-title">รอบตัดงบ</div>
+      <div class="psc-val">
+        📅 
+        <select id="cycleType" onchange="saveCycleSettings()" style="border:none; background:transparent; font-size:0.9rem; font-weight:600; color:var(--text); outline:none; font-family:inherit; cursor:pointer;">
+          <option value="monthly">รายเดือน (ทุกวันที่ 1)</option>
+          <option value="weekly">รายสัปดาห์ (ทุกวันจันทร์)</option>
+        </select>
+      </div>
+    </div>
+    <div style="font-size: 1.2rem;">⚙️</div>
   </div>
+
+  <div class="budget-type-tabs">
+    <button class="btt exp active" id="bttExp" onclick="switchBudgetTab('expense')">รายจ่าย</button>
+    <button class="btt inc"        id="bttInc" onclick="switchBudgetTab('income')">รายรับ</button>
+  </div>
+
+  <div class="budget-list" id="budgetList"></div>
+</div>
+
 
 </div>
 
