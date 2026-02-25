@@ -15,109 +15,69 @@
             --bg: #FBF7F2; --white: #FFFFFF; --text: #1C1C1E; --sub: #8E8E93; --border: #E5E5EA; --nav-h: 70px;
         }
         * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-        html, body { height:100%; background:var(--bg); color:var(--text); font-family:-apple-system, sans-serif; overflow: hidden; }
-        body { display: flex; flex-direction: column; }
-
+        html, body { height:100%; background:var(--bg); color:var(--text); font-family:-apple-system, sans-serif; }
+        
         /* หน้าจอ Login */
-        .liff-login-overlay { position:fixed; inset:0; z-index:20000; background:var(--bg); display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; }
-        .btn-line { background:#06C755; color:white; border:none; padding:15px 30px; border-radius:15px; font-weight:bold; font-size:1.1rem; cursor:pointer; margin-top:20px; display:flex; align-items:center; gap:10px; }
+        #liffLoginScreen { position:fixed; inset:0; z-index:20000; background:var(--bg); display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; }
+        .btn-line { background:#06C755; color:white; border:none; padding:15px 30px; border-radius:15px; font-weight:bold; font-size:1.1rem; cursor:pointer; margin-top:20px; }
 
-        /* Header ดีไซน์เดิมของคุณหมี */
-        .header { background:var(--white); padding:15px 20px; display:flex; align-items:center; justify-content:center; position:relative; border-bottom:1px solid var(--border); }
-        .header-bear { font-size: 1.5rem; margin-right: 10px; }
-        .header-title { font-weight: 800; font-size: 1.2rem; letter-spacing: -0.5px; }
-
-        /* Main Content */
-        .main-content { flex: 1; overflow-y: auto; padding-bottom: 20px; }
-        .panel { display:none; max-width:480px; margin:0 auto; padding:20px; }
+        /* ตัวแอป */
+        #appBody { display: none; flex-direction: column; min-height: 100vh; }
+        .header { background:var(--white); padding:15px 20px; display:flex; align-items:center; justify-content:center; border-bottom:1px solid var(--border); position:sticky; top:0; }
+        .header-title { font-weight: 800; font-size: 1.2rem; }
+        
+        .main-content { flex: 1; padding: 20px; }
+        .panel { display:none; }
         .panel.active { display:block; }
 
-        /* การ์ดสรุปยอด */
-        .balance-section { text-align:center; padding:30px 0; }
-        .bal-label { font-size:0.85rem; color:var(--sub); font-weight:600; margin-bottom:5px; }
-        .bal-amount { font-size:3rem; font-weight:900; letter-spacing:-1px; }
+        /* การ์ดสรุป */
+        .balance-section { text-align:center; padding:20px 0; }
+        .bal-amount { font-size:3rem; font-weight:900; color:var(--pink); }
 
-        /* ตารางหมวดหมู่ (ที่คุณหมีชอบ) */
-        .cat-table { background:var(--white); border-radius:24px; padding:10px; border:1px solid var(--border); }
-        .cat-row { display:flex; align-items:center; padding:12px 15px; border-bottom:1px solid #F5F5F7; }
+        .cat-table { background:var(--white); border-radius:24px; padding:10px; border:1px solid var(--border); margin-top:20px; }
+        .cat-row { display:flex; align-items:center; padding:15px; border-bottom:1px solid #F5F5F7; }
         .cat-row:last-child { border-bottom:none; }
-        .cat-icon { width:40px; height:40px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:1.2rem; margin-right:12px; }
-        .cat-info { flex:1; }
-        .cat-name { font-weight:700; font-size:0.95rem; }
-        .cat-bar-bg { height:6px; background:#F2F2F7; border-radius:3px; margin-top:6px; overflow:hidden; }
-        .cat-bar-fill { height:100%; border-radius:3px; }
-        .cat-val { text-align:right; font-weight:700; font-size:0.95rem; }
 
-        /* Nav ด้านล่าง */
-        .bottom-nav { height:var(--nav-h); background:rgba(255,255,255,0.8); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border-top:1px solid var(--border); display:grid; grid-template-columns:repeat(3,1fr); padding-bottom: env(safe-area-inset-bottom); }
-        .nav-btn { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; background:none; border:none; color:var(--sub); font-size:0.7rem; font-weight:700; transition: 0.2s; }
+        /* Nav */
+        .bottom-nav { position:fixed; bottom:0; left:0; right:0; height:var(--nav-h); background:var(--white); border-top:1px solid var(--border); display:grid; grid-template-columns:repeat(3,1fr); padding-bottom: env(safe-area-inset-bottom); }
+        .nav-btn { display:flex; flex-direction:column; align-items:center; justify-content:center; background:none; border:none; color:var(--sub); font-size:0.7rem; font-weight:700; }
         .nav-btn.active { color:var(--pink); }
-        .nav-icon { font-size: 1.4rem; }
-
+        
         .hidden { display:none !important; }
     </style>
 </head>
 <body>
 
-<div id="liffLoginScreen" class="liff-login-overlay">
+<div id="liffLoginScreen">
     <div style="font-size: 5rem;">🐻</div>
     <h2 style="color:var(--pink);">Don Note</h2>
-    <p style="color:var(--sub); margin-top:10px;">กรุณาเข้าสู่ระบบเพื่อดูสมุดบันทึก</p>
     <button class="btn-line" onclick="liff.login()">Login with LINE</button>
 </div>
 
-<div id="appBody" class="hidden" style="height: 100%; display: flex; flex-direction: column;">
+<div id="appBody">
     <div class="header">
-        <span class="header-bear">🐻</span>
         <span class="header-title" id="userNameTitle">Don Note ⭐</span>
     </div>
 
     <div class="main-content">
         <div class="panel active" id="panel-home">
             <div class="balance-section">
-                <div class="bal-label">เงินคงเหลือทั้งหมด</div>
+                <div style="font-size:0.85rem; color:var(--sub);">เงินคงเหลือ</div>
                 <div class="bal-amount" id="balAmount">฿0</div>
             </div>
-
             <div class="cat-table">
-                <div class="cat-row">
-                    <div class="cat-icon" style="background:var(--pink-light);">💰</div>
-                    <div class="cat-info">
-                        <div class="cat-name">รายรับ</div>
-                        <div class="cat-bar-bg"><div class="cat-bar-fill" style="width:70%; background:var(--pink);"></div></div>
-                    </div>
-                    <div class="cat-val" style="color:var(--pink);">฿0</div>
-                </div>
-                <div class="cat-row">
-                    <div class="cat-icon" style="background:var(--teal-light);">💸</div>
-                    <div class="cat-info">
-                        <div class="cat-name">รายจ่าย</div>
-                        <div class="cat-bar-bg"><div class="cat-bar-fill" style="width:40%; background:var(--teal);"></div></div>
-                    </div>
-                    <div class="cat-val" style="color:var(--teal);">฿0</div>
-                </div>
+                <div class="cat-row">💰 รายรับ <span style="margin-left:auto; font-weight:700;">฿0</span></div>
+                <div class="cat-row">💸 รายจ่าย <span style="margin-left:auto; font-weight:700;">฿0</span></div>
             </div>
         </div>
-
-        <div class="panel" id="panel-add">
-            <h3 style="text-align:center;">เพิ่มบันทึกใหม่</h3>
-        </div>
-
-        <div class="panel" id="panel-history">
-            <h3 style="text-align:center;">รายการย้อนหลัง</h3>
-        </div>
+        <div class="panel" id="panel-add"><h3>หน้าบันทึก</h3></div>
+        <div class="panel" id="panel-history"><h3>หน้าประวัติ</h3></div>
     </div>
 
     <nav class="bottom-nav">
-        <button class="nav-btn active" onclick="goPanel('panel-home', this)">
-            <span class="nav-icon">🏠</span><span>สรุป</span>
-        </button>
-        <button class="nav-btn" onclick="goPanel('panel-add', this)">
-            <span class="nav-icon">✏️</span><span>บันทึก</span>
-        </button>
-        <button class="nav-btn" onclick="goPanel('panel-history', this)">
-            <span class="nav-icon">📋</span><span>รายการ</span>
-        </button>
+        <button class="nav-btn active" onclick="goPanel('panel-home', this)">🏠 สรุป</button>
+        <button class="nav-btn" onclick="goPanel('panel-add', this)">✏️ บันทึก</button>
+        <button class="nav-btn" onclick="goPanel('panel-history', this)">📋 รายการ</button>
     </nav>
 </div>
 
@@ -135,38 +95,35 @@ if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 const MY_LIFF_ID = "2009225343-VWodtDEA"; 
 
-let userId = "";
-
 async function initLiff() {
     try {
         await liff.init({ liffId: MY_LIFF_ID });
         if (liff.isLoggedIn()) {
             const profile = await liff.getProfile();
-            userId = profile.userId;
-            document.getElementById('liffLoginScreen').classList.add('hidden');
-            document.getElementById('appBody').style.display = 'flex';
+            
+            // สั่งเปิดหน้าแอปทันที
+            document.getElementById('liffLoginScreen').style.display = 'none';
+            const app = document.getElementById('appBody');
+            app.style.display = 'flex';
+            
             document.getElementById('userNameTitle').textContent = profile.displayName + " ⭐";
-            loadData();
+        } else {
+            document.getElementById('liffLoginScreen').style.display = 'flex';
+            document.getElementById('appBody').style.display = 'none';
         }
-    } catch (err) { console.error(err); }
+    } catch (err) {
+        alert("เกิดข้อผิดพลาด: " + err.message);
+    }
 }
 
 function goPanel(id, btn) {
-    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-    document.getElementById(id).classList.add('active');
+    document.querySelectorAll('.panel').forEach(p => p.style.display = 'none');
+    document.getElementById(id).style.display = 'block';
     document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
 }
 
-async function loadData() {
-    // โหลดข้อมูลจาก Firebase มาอัปเดตหน้าจอ
-    const doc = await db.collection("dongNote").doc(userId).get();
-    if (doc.exists) {
-        // อัปเดตตัวเลขในหน้าจอ (ถ้ามีข้อมูล)
-    }
-}
-
-initLiff();
+window.onload = initLiff;
 </script>
 </body>
 </html>
