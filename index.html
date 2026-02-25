@@ -1,428 +1,317 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Don Note">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="theme-color" content="#FF4785">
-<link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="apple-touch-icon.png">
-<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
-<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-<title>돈노트 Don Note ⭐</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DormFlow - ระบบจัดการหอพัก</title>
+    
+    <!-- Icons -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgZmlsbD0iIzEyMTIxMiIvPjxwYXRoIGQ9Ik0xNDYgMTUwIEwyNTYgNTAgTDM2NiAxNTAgVjQ2MiBIMTQ2IFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI0Q0QUYzNyIgc3Ryb2tlLXdpZHRoPSIyMCIvPjxyZWN0IHg9IjE5MCIgeT0iMTkwIiB3aWR0aD0iNDAiIGhlaWdodD0iNTAiIGZpbGw9IiNENEFGMzciLz48cmVjdCB4PSIyODIiIHk9IjE5MCIgd2lkdGg9IjQwIiBoZWlnaHQ9IjUwIiBmaWxsPSIjRDRBRjM3Ii8+PHJlY3QgeD0iMTkwIiB5PSIyODAiIHdpZHRoPSI0MCIgaGVpZ2h0PSI1MCIgZmlsbD0iI0Q0QUYzNyIvPjxyZWN0IHg9IjI4MiIgeT0iMjgwIiB3aWR0aD0iNDAiIGhlaWdodD0iNTAiIGZpbGw9IiNENEFGMzciLz48cmVjdCB4PSIxOTAiIHk9IjM3MCIgd2lkdGg9IjQwIiBoZWlnaHQ9IjUwIiBmaWxsPSIjRDRBRjM3Ii8+PHJlY3QgeD0iMjgyIiB5PSIzNzAiIHdpZHRoPSI0MCIgaGVpZ2h0PSI1MCIgZmlsbD0iI0Q0QUYzNyIvPjxwYXRoIGQ9Ik0xNDYgMTUwIEwyNTYgNTAgTDM2NiAxNTAgSDE0NiBaIiBmaWxsPSIjRDRBRjM3Ii8+PC9zdmc+" />
+    <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgZmlsbD0iIzEyMTIxMiIvPjxwYXRoIGQ9Ik0xNDYgMTUwIEwyNTYgNTAgTDM2NiAxNTAgVjQ2MiBIMTQ2IFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI0Q0QUYzNyIgc3Ryb2tlLXdpZHRoPSIyMCIvPjxyZWN0IHg9IjE5MCIgeT0iMTkwIiB3aWR0aD0iNDAiIGhlaWdodD0iNTAiIGZpbGw9IiNENEFGMzciLz48cmVjdCB4PSIyODIiIHk9IjE5MCIgd2lkdGg9IjQwIiBoZWlnaHQ9IjUwIiBmaWxsPSIjRDRBRjM3Ii8+PHJlY3QgeD0iMTkwIiB5PSIyODAiIHdpZHRoPSI0MCIgaGVpZ2h0PSI1MCIgZmlsbD0iI0Q0QUYzNyIvPjxyZWN0IHg9IjI4MiIgeT0iMjgwIiB3aWR0aD0iNDAiIGhlaWdodD0iNTAiIGZpbGw9IiNENEFGMzciLz48cmVjdCB4PSIxOTAiIHk9IjM3MCIgd2lkdGg9IjQwIiBoZWlnaHQ9IjUwIiBmaWxsPSIjRDRBRjM3Ii8+PHJlY3QgeD0iMjgyIiB5PSIzNzAiIHdpZHRoPSI0MCIgaGVpZ2h0PSI1MCIgZmlsbD0iI0Q0QUYzNyIvPjxwYXRoIGQ9Ik0xNDYgMTUwIEwyNTYgNTAgTDM2NiAxNTAgSDE0NiBaIiBmaWxsPSIjRDRBRjM3Ii8+PC9zdmc+" />
 
-<style>
-:root {
-  --pink:       #FF4785;
-  --pink-light: #FFF0F5;
-  --pink-border:#FFADD2;
-  --pink-track: #FFD6E7;
-  --teal:       #00C9A7;
-  --teal-light: #E8FAF7;
-  --teal-border:#80E5D8;
-  --teal-track: #B2F0E8;
-  --bg:         #F5F5F5;
-  --white:      #FFFFFF;
-  --text:       #1C1C1E;
-  --sub:        #8E8E93;
-  --border:     #E5E5EA;
-  --nav-h:      60px;
-}
+    <!-- Styles -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            fontFamily: { sans: ['Sarabun', 'sans-serif'], serif: ['Playfair Display', 'serif'] },
+            colors: {
+              gold: { 100: '#F9F1D8', 200: '#EFDFA8', 300: '#E6CE79', 400: '#DDBD4D', 500: '#D4AF37', 600: '#AA8C2C', 700: '#806921', 800: '#554616', 900: '#2B230B' },
+              cream: { DEFAULT: '#EFE8D8', hover: '#E0D8C0' },
+              dark: { bg: '#121212', surface: '#1E1E1E', card: '#252525' }
+            }
+          }
+        }
+      }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;700&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
 
-*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-system,'SF Pro Text','Segoe UI',sans-serif;}
-body{padding-bottom:var(--nav-h);}
+    <!-- Core Libraries (UMD - No Modules) -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Recharts UMD -->
+    <script src="https://unpkg.com/recharts@2.10.3/umd/Recharts.js"></script>
+    
+    <!-- Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- Utilities -->
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
 
-/* ── HEADER ── */
-.header{
-  background:var(--white);
-  padding:12px 18px;
-  padding-top:calc(12px + env(safe-area-inset-top));
-  display:flex;align-items:center;justify-content:center;
-  position:relative;
-}
-.header-title{font-size:1rem;font-weight:700;color:var(--text);}
-.header-bear{
-  position:absolute;left:16px;
-  font-size:1.3rem;cursor:pointer;
-}
-.header-right{position:absolute;right:16px;font-size:.8rem;color:var(--sub);}
+    <!-- Firebase Compat (Global) -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
 
-/* ── BOTTOM NAV ── */
-.bottom-nav{
-  position:fixed;bottom:0;left:0;right:0;
-  height:var(--nav-h);
-  background:var(--white);
-  border-top:1px solid var(--border);
-  display:grid;grid-template-columns:repeat(5,1fr);
-  padding-bottom:env(safe-area-inset-bottom);
-  z-index:100;
-}
-.nav-btn{
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:3px;background:none;border:none;cursor:pointer;
-  color:var(--sub);font-size:.58rem;font-weight:600;letter-spacing:.02em;
-  transition:color .2s;
-}
-.nav-btn .ni{font-size:1.3rem;}
-.nav-btn.active{color:var(--pink);}
+    <style>
+        body { background-color: #121212; color: #E5E7EB; padding-bottom: env(safe-area-inset-bottom); }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #121212; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #D4AF37; }
+        @media print { .no-print { display: none !important; } .print-only { display: block !important; } body { background-color: white !important; color: black !important; } }
+        /* Fix Recharts container */
+        .recharts-wrapper { width: 100% !important; height: 100% !important; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+    
+    <!-- Error Handling -->
+    <div id="err-ui" style="display:none;position:fixed;top:0;left:0;right:0;padding:20px;background:rgba(200,0,0,0.9);color:white;z-index:9999;text-align:center;"></div>
+    <script>
+        window.onerror = function(m,s,l){ 
+            if(!m.toString().includes("ResizeObserver")) {
+                document.getElementById('err-ui').innerText = "Error: " + m; 
+                document.getElementById('err-ui').style.display='block'; 
+            }
+        }
+    </script>
 
-/* ── PANELS ── */
-.panel{display:none;max-width:480px;margin:0 auto;padding:14px 14px;}
-.panel.active{display:block;}
+    <script type="text/babel">
+        // --- SETUP & GLOBALS ---
+        const { useState, useEffect, useRef } = React;
+        const { createRoot } = ReactDOM;
+        
+        // Safe Recharts Access
+        const Recharts = window.Recharts || {};
+        const { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } = Recharts;
 
-/* Period pill */
-.period-pill{
-  display:flex;align-items:center;justify-content:center;
-  gap:6px;margin:0 auto 14px;
-  background:var(--white);border:1px solid var(--border);
-  border-radius:20px;padding:8px 18px;
-  font-size:.85rem;font-weight:600;color:var(--text);
-  width:fit-content;cursor:pointer;
-}
-.period-pill .pi-arrow{color:var(--sub);font-size:.7rem;}
+        // --- ICONS WRAPPER ---
+        const Icon = ({ name, size = 20, className }) => {
+            useEffect(() => { if(window.lucide) window.lucide.createIcons(); });
+            return <i data-lucide={name.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase()} width={size} height={size} className={className}></i>;
+        };
 
-/* Balance */
-.balance-wrap{text-align:center;margin-bottom:14px;}
-.balance-label{font-size:.72rem;color:var(--sub);font-weight:600;text-transform:uppercase;letter-spacing:.06em;}
-.balance-amount{font-size:2.6rem;font-weight:900;margin:4px 0 8px;color:#1C1C1E;}
-.balance-amount.positive{color:#34C759;}
-.balance-amount.negative{color:var(--pink);}
-.period-btn{
-  display:inline-flex;align-items:center;gap:5px;
-  border:1px solid var(--border);border-radius:20px;
-  padding:6px 14px;font-size:.78rem;font-weight:600;color:var(--text);
-  background:var(--white);cursor:pointer;
-}
+        // --- FIREBASE SETUP ---
+        const FB_CONF = {
+           apiKey: "AIzaSyDMijN61Jxlbq78IwUgdTYYnxviP0Fe2cQ",
+           authDomain: "gen-lang-client-0600908041.firebaseapp.com",
+           projectId: "gen-lang-client-0600908041",
+           storageBucket: "gen-lang-client-0600908041.firebasestorage.app",
+           messagingSenderId: "613903089578",
+           appId: "1:613903089578:web:f30c73e8798331bf9a75d3"
+        };
 
-/* Inc/Exp cards */
-.ie-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
-.ie-card{
-  padding:14px 14px;border-radius:16px;border:2px solid var(--border);
-  background:var(--white);cursor:pointer;transition:border-color .2s;
-}
-.ie-card.exp-card{background:var(--pink-light);}
-.ie-card.inc-card{background:var(--teal-light);}
-.ie-card.active.exp-card{border-color:var(--pink);}
-.ie-card.active.inc-card{border-color:var(--teal);}
-.ie-card .iec-label{font-size:.72rem;font-weight:700;margin-bottom:5px;}
-.ie-card.exp-card .iec-label{color:var(--pink);}
-.ie-card.inc-card .iec-label{color:var(--teal);}
-.ie-card .iec-amount{font-size:1.25rem;font-weight:900;}
-.ie-card.exp-card .iec-amount{color:var(--pink);}
-.ie-card.inc-card .iec-amount{color:var(--teal);}
+        let db = null, storage = null;
+        try {
+            const k = localStorage.getItem('fb_apiKey') || FB_CONF.apiKey;
+            const p = localStorage.getItem('fb_projectId') || FB_CONF.projectId;
+            const b = localStorage.getItem('fb_storageBucket') || FB_CONF.storageBucket;
+            if(window.firebase) {
+                firebase.initializeApp({apiKey:k, authDomain:`${p}.firebaseapp.com`, projectId:p, storageBucket:b, messagingSenderId:FB_CONF.messagingSenderId, appId:FB_CONF.appId});
+                db = firebase.firestore(); storage = firebase.storage();
+                console.log('Firebase Init:', p);
+            }
+        } catch(e) { console.warn('Offline:', e); }
 
-/* Summary card */
-.sum-card{
-  background:var(--white);border-radius:20px;
-  padding:18px 16px;
-  box-shadow:0 1px 6px rgba(0,0,0,.07);
-}
-.sum-card-header{
-  display:flex;align-items:center;gap:10px;
-  margin-bottom:18px;
-}
-.dong-badge{
-  width:44px;height:44px;flex-shrink:0;
-  background:radial-gradient(circle,#fff8e7,#fff0d0);
-  border:2px solid #F0C040;border-radius:50%;
-  display:flex;align-items:center;justify-content:center;
-  font-size:.55rem;font-weight:800;color:#C07800;text-align:center;
-  line-height:1.2;letter-spacing:.01em;
-  box-shadow:0 2px 6px rgba(192,120,0,.2);
-}
-.sum-card-title{
-  flex:1;text-align:center;
-  font-size:1.05rem;font-weight:800;
-}
-.sum-card-title.exp-title{color:var(--pink);}
-.sum-card-title.inc-title{color:var(--teal);}
+        const fb = {
+            isOnline: () => !!db,
+            getDocs: async (c) => { if(!db) return []; try { const s = await db.collection(c).get(); return s.docs.map(d=>({id:d.id,...d.data()})); } catch { return []; } },
+            setDoc: async (c,i,d) => { if(!db) return false; try { await db.collection(c).doc(i).set(d); return true; } catch { return false; } },
+            delDoc: async (c,i) => { if(!db) return false; try { await db.collection(c).doc(i).delete(); return true; } catch { return false; } },
+            upload: async (blob, path) => { if(!storage) return null; try { const r = storage.ref(path); await r.put(blob); return await r.getDownloadURL(); } catch { return null; } }
+        };
 
-/* Category rows */
-.cat-row{margin-bottom:14px;}
-.cat-row-top{
-  display:flex;justify-content:space-between;align-items:baseline;
-  margin-bottom:5px;
-}
-.cat-row-name{font-size:.92rem;font-weight:600;color:var(--text);}
-.cat-row-amt{font-size:.82rem;color:var(--sub);}
-.bar-track{height:5px;border-radius:4px;overflow:hidden;}
-.bar-track.exp-track{background:var(--pink-track);}
-.bar-track.inc-track{background:var(--teal-track);}
-.bar-fill{height:100%;border-radius:4px;transition:width .9s ease;}
-.bar-fill.exp-fill{background:var(--pink);}
+        // --- GEMINI OCR ---
+        const scanOCR = async (b64, type) => {
+            try {
+                const k = localStorage.getItem('fb_apiKey') || FB_CONF.apiKey;
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${k}`, {
+                    method:'POST', headers:{'Content-Type':'application/json'},
+                    body: JSON.stringify({contents:[{parts:[{inline_data:{mime_type:"image/jpeg",data:b64.split(',')[1]}},{text:`Read number from ${type} meter. Return ONLY number.`}]}]})
+                });
+                const d = await res.json();
+                const t = d.candidates?.[0]?.content?.parts?.[0]?.text;
+                return t ? parseFloat(t.replace(/[^0-9.]/g,'')) : null;
+            } catch { return null; }
+        };
 
-/* Manage budget btn */
-.btn-manage{
-  width:100%;padding:13px;margin-top:10px;
-  background:var(--white);border:1px solid var(--border);
-  border-radius:12px;font-size:.88rem;font-weight:600;
-  color:var(--text);cursor:pointer;transition:background .2s;
-  display:flex;align-items:center;justify-content:center;gap:6px;
-}
-.btn-manage:hover{background:var(--bg);}
+        // --- DATA STORE ---
+        const store = {
+            load: (k,d) => { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; },
+            save: (k,v) => localStorage.setItem(k, JSON.stringify(v)),
+            getUsers: async () => {
+                let l = store.load('users', [{id:'admin-001',email:'adminsotrue@dormflow.com',password:'2499636',role:'SUPER_ADMIN',dormName:'ผู้ดูแลระบบ',subscriptionEnd:'2099-12-31',promptPayId:'095-419-4451',dormSize:'L'}]);
+                if(fb.isOnline()){ const c = await fb.getDocs('users'); const m = new Map(c.map(u=>[u.id,u])); l.forEach(u=>{if(!m.has(u.id))c.push(u)}); return c; }
+                return l;
+            },
+            saveUser: async (u) => { let l = store.load('users',[]); const i = l.findIndex(x=>x.id===u.id); if(i>=0) l[i]=u; else l.push(u); store.save('users',l); await fb.setDoc('users',u.id,u); },
+            delUser: async (i) => { let l = store.load('users',[]); store.save('users',l.filter(x=>x.id!==i)); await fb.delDoc('users',i); },
+            sync: async () => { if(!fb.isOnline()) throw new Error('Offline'); const l = store.load('users',[]); let c=0; for(const u of l){ if(await fb.setDoc('users',u.id,u)) c++; } return c; },
+            getData: async (c,uid) => { let l = store.load(c,[]); if(fb.isOnline()){ const cl = await fb.getDocs(c); if(cl.length) l=cl; } return l.filter(x=>x.ownerId===uid); },
+            saveData: async (c,d) => { let l = store.load(c,[]); const i = l.findIndex(x=>x.id===d.id); if(i>=0) l[i]=d; else l.push(d); store.save(c,l); await fb.setDoc(c,d.id,d); },
+            delData: async (c,i) => { let l = store.load(c,[]); store.save(c,l.filter(x=>x.id!==i)); await fb.delDoc(c,i); }
+        };
 
-/* Invite banner */
-.invite-banner{
-  width:100%;padding:14px;margin-top:10px;
-  background:linear-gradient(135deg,var(--pink),#FF7BB5);
-  border:none;border-radius:14px;font-size:.88rem;font-weight:800;
-  color:#fff;cursor:pointer;
-  display:flex;align-items:center;justify-content:center;gap:8px;
-}
-.invite-badge{
-  background:#FFD700;color:#8B6914;font-size:.62rem;font-weight:900;
-  padding:3px 8px;border-radius:12px;white-space:nowrap;
-}
+        // --- UI COMPONENTS ---
+        const Button = ({children,onClick,variant='primary',disabled,className}) => {
+            const s = {primary:"bg-gold-500 text-black", secondary:"bg-zinc-900 text-gold-400 border border-zinc-700", danger:"bg-red-900/20 text-red-400"};
+            return <button onClick={onClick} disabled={disabled} className={`px-4 py-2 rounded font-bold flex items-center justify-center gap-2 disabled:opacity-50 ${s[variant]||s.primary} ${className}`}>{children}</button>;
+        };
+        const Input = ({label,value,onChange,type='text',placeholder}) => (
+            <div className="w-full space-y-1">{label&&<label className="text-xs text-zinc-400 uppercase">{label}</label>}<input type={type} value={value} onChange={onChange} placeholder={placeholder} className="w-full bg-zinc-900/50 border border-zinc-800 rounded p-3 text-cream outline-none focus:border-gold-500"/></div>
+        );
+        const Select = ({label,value,onChange,children}) => (
+            <div className="w-full space-y-1">{label&&<label className="text-xs text-zinc-400 uppercase">{label}</label>}<select value={value} onChange={onChange} className="w-full bg-zinc-900/50 border border-zinc-800 rounded p-3 text-cream outline-none focus:border-gold-500">{children}</select></div>
+        );
+        const Card = ({title,children,className}) => (
+            <div className={`bg-[#1A1A1A] border border-zinc-800 rounded-xl overflow-hidden shadow-lg ${className}`}>{title&&<div className="px-4 py-3 border-b border-zinc-800 bg-zinc-900/30"><h3 className="text-lg font-serif text-cream">{title}</h3></div>}<div className="p-4">{children}</div></div>
+        );
+        const ImageUpload = ({label,value,onChange,onRemove}) => {
+            const [load, setLoad] = useState(false); const ref = useRef();
+            const h = (e) => {
+                const f = e.target.files[0]; if(!f) return; setLoad(true);
+                const r = new FileReader(); r.readAsDataURL(f);
+                r.onload = (ev) => {
+                    const i = new Image(); i.src = ev.target.result;
+                    i.onload = () => {
+                        const c = document.createElement('canvas'); const s = 800/i.width; c.width=800; c.height=i.height*s;
+                        c.getContext('2d').drawImage(i,0,0,c.width,c.height);
+                        c.toBlob(async b => { if(b) { const u = await fb.upload(b, `u/${Date.now()}.jpg`); onChange(u||c.toDataURL('image/jpeg',0.7)); setLoad(false); } }, 'image/jpeg', 0.7);
+                    }
+                }
+            };
+            return (
+                <div className="w-full space-y-1"><label className="text-xs text-zinc-400 uppercase">{label}</label>{!value ? <div onClick={()=>!load&&ref.current.click()} className="h-32 border-2 border-dashed border-zinc-800 rounded flex flex-col items-center justify-center text-zinc-500 cursor-pointer hover:border-gold-500">{load?'...':<Icon name="Image"/>}</div> : <div className="relative h-32 rounded overflow-hidden border border-zinc-800"><img src={value} className="w-full h-full object-cover"/>{onRemove&&<button onClick={onRemove} className="absolute top-1 right-1 bg-red-900 text-white p-1 rounded-full"><Icon name="X" size={12}/></button>}</div>}<input type="file" ref={ref} onChange={h} className="hidden" accept="image/*"/></div>
+            );
+        };
 
-/* ── บันทึก PANEL ── */
-.add-header{text-align:center;font-size:1rem;font-weight:700;padding:4px 0 14px;}
+        // --- PAGES ---
+        const Intro = ({onStart}) => (
+            <div className="min-h-screen flex flex-col items-center justify-center bg-[#121212] text-center p-6">
+                <h1 className="text-5xl font-serif text-cream mb-4">DormFlow</h1><p className="text-gold-500 text-xs tracking-widest mb-8">Luxury Management</p><Button onClick={onStart} className="w-full max-w-xs py-4 text-lg">START <Icon name="ChevronRight"/></Button>
+            </div>
+        );
 
-.type-tabs{
-  display:grid;grid-template-columns:1fr 1fr;gap:0;
-  background:var(--bg);border-radius:12px;padding:3px;
-  margin-bottom:16px;
-}
-.type-tab{
-  padding:10px;border:none;border-radius:10px;
-  font-size:.88rem;font-weight:700;cursor:pointer;
-  background:transparent;color:var(--sub);transition:all .2s;
-}
-.type-tab.active.exp{background:var(--white);color:var(--pink);box-shadow:0 1px 4px rgba(0,0,0,.1);}
-.type-tab.active.inc{background:var(--white);color:var(--teal);box-shadow:0 1px 4px rgba(0,0,0,.1);}
+        const Login = ({onLogin}) => {
+            const [e,sE]=useState(''); const [p,sP]=useState('');
+            const go = async () => {
+                if(e==='adminsotrue@dormflow.com' && p==='2499636') return onLogin({id:'admin-001',email:e,role:'SUPER_ADMIN',dormName:'Admin',subscriptionEnd:'2099-12-31',promptPayId:'-'});
+                const u = await store.getUsers(); const f = u.find(x=>x.email.toLowerCase()===e.toLowerCase()&&x.password===p);
+                if(f) onLogin(f); else alert('Failed');
+            };
+            return (
+                <div className="min-h-screen flex flex-col items-center justify-center bg-[#121212] p-6">
+                    <div className="w-full max-w-sm space-y-4 text-center">
+                        <h1 className="text-4xl font-serif text-cream">DormFlow</h1>
+                        <Input placeholder="Email" value={e} onChange={ev=>sE(ev.target.value)}/>
+                        <Input placeholder="Password" type="password" value={p} onChange={ev=>sP(ev.target.value)}/>
+                        <Button onClick={go} className="w-full py-3">Login</Button>
+                    </div>
+                </div>
+            );
+        };
 
-.amount-box{
-  background:var(--bg);border-radius:16px;padding:16px 18px;
-  margin-bottom:14px;display:flex;align-items:center;gap:8px;
-}
-.amount-box .curr{font-size:1.4rem;font-weight:800;color:var(--sub);}
-.amount-box input{
-  flex:1;border:none;background:transparent;outline:none;
-  font-size:2rem;font-weight:900;color:var(--text);font-family:inherit;
-}
-.amount-box input::placeholder{color:#C7C7CC;}
+        const Dashboard = ({rooms,bills,expenses,user}) => {
+            const inc = bills.filter(b=>b.status==='PAID').reduce((s,b)=>s+b.totalAmount,0);
+            const exp = expenses.reduce((s,e)=>s+e.amount,0);
+            const data = [{name:'In',v:inc},{name:'Out',v:exp},{name:'Net',v:Math.max(0,inc-exp)}];
+            return (
+                <div className="space-y-6">
+                    <h2 className="text-3xl font-serif text-cream mb-4">{user.dormName}</h2>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <Card><div className="text-xs text-zinc-500">ห้อง</div><div className="text-2xl">{rooms.length}</div></Card>
+                        <Card><div className="text-xs text-zinc-500">รอชำระ</div><div className="text-2xl text-red-400">{bills.filter(b=>b.status==='PENDING').length}</div></Card>
+                        <Card><div className="text-xs text-zinc-500">รายรับ</div><div className="text-2xl text-green-400">฿{inc.toLocaleString()}</div></Card>
+                        <Card><div className="text-xs text-zinc-500">กำไร</div><div className="text-2xl text-gold-400">฿{(inc-exp).toLocaleString()}</div></Card>
+                    </div>
+                    <Card title="Overview" className="h-64">
+                        {Recharts.AreaChart ? <ResponsiveContainer width="100%" height="100%"><AreaChart data={data}><CartesianGrid strokeDasharray="3 3" stroke="#333"/><XAxis dataKey="name" stroke="#666"/><YAxis stroke="#666"/><Tooltip contentStyle={{backgroundColor:'#333',borderColor:'#333'}}/><Area type="monotone" dataKey="v" stroke="#D4AF37" fill="#D4AF37" fillOpacity={0.2}/></AreaChart></ResponsiveContainer> : <div className="text-center text-zinc-500">Loading Chart...</div>}
+                    </Card>
+                </div>
+            );
+        };
 
-.quick-row{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:14px;}
-.q-chip{
-  padding:7px 16px;border-radius:20px;
-  border:1px solid var(--border);background:var(--white);
-  font-size:.82rem;font-weight:600;color:var(--text);cursor:pointer;
-  transition:all .2s;
-}
-.q-chip:hover,.q-chip.sel{background:var(--pink);border-color:var(--pink);color:#fff;}
-.q-chip.sel.inc-chip{background:var(--teal);border-color:var(--teal);}
+        const Rooms = ({rooms,user,onUp}) => {
+            const [m,sM]=useState(false); const [f,sF]=useState({});
+            const sv = async () => { await store.saveData('rooms',{id:f.id||Date.now().toString(),ownerId:user.id,number:f.number,price:Number(f.price),status:f.tenantName?'OCCUPIED':'VACANT',lastElecMeter:Number(f.lastElecMeter||0),lastWaterMeter:Number(f.lastWaterMeter||0),tenantName:f.tenantName,tenantPhoto:f.tenantPhoto}); onUp(await store.getData('rooms',user.id)); sM(false); };
+            return (
+                <div className="space-y-4">
+                    <div className="flex justify-between"><h2 className="text-2xl font-serif text-cream">ห้องพัก</h2><Button onClick={()=>{sF({});sM(true)}}><Icon name="Plus"/> เพิ่ม</Button></div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">{rooms.map(r=><Card key={r.id} className={r.status==='OCCUPIED'?'border-l-green-500 border-l-4':''}><div className="flex justify-between"><div><h3 className="text-xl">{r.number}</h3><p className="text-xs text-zinc-500">฿{r.price}</p></div>{r.tenantName&&<div className="text-xs bg-zinc-800 px-2 py-1 rounded h-fit">{r.tenantName}</div>}</div><div className="mt-4 flex gap-2 justify-end"><button onClick={()=>{sF(r);sM(true)}} className="p-2 bg-zinc-800 rounded"><Icon name="PenTool" size={14}/></button><button onClick={async ()=>{if(confirm('Del?')){await store.delData('rooms',r.id);onUp(await store.getData('rooms',user.id))}}} className="p-2 bg-zinc-800 rounded text-red-400"><Icon name="Trash2" size={14}/></button></div></Card>)}</div>
+                    {m && <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50"><div className="bg-[#1A1A1A] w-full max-w-md p-6 rounded-xl border border-zinc-800 space-y-3"><h3 className="text-gold-500 text-xl">{f.id?'Edit':'Add'}</h3><Input label="Number" value={f.number||''} onChange={e=>sF({...f,number:e.target.value})}/><Input label="Price" type="number" value={f.price||''} onChange={e=>sF({...f,price:e.target.value})}/><div className="grid grid-cols-2 gap-2"><Input label="Elec" type="number" value={f.lastElecMeter||''} onChange={e=>sF({...f,lastElecMeter:e.target.value})}/><Input label="Water" type="number" value={f.lastWaterMeter||''} onChange={e=>sF({...f,lastWaterMeter:e.target.value})}/></div><Input label="Tenant" value={f.tenantName||''} onChange={e=>sF({...f,tenantName:e.target.value})}/><ImageUpload label="Photo" value={f.tenantPhoto} onChange={v=>sF({...f,tenantPhoto:v})} onRemove={()=>sF({...f,tenantPhoto:null})}/><div className="flex gap-2"><Button onClick={sv} className="flex-1">Save</Button><Button onClick={()=>sM(false)} variant="secondary">Cancel</Button></div></div></div>}
+                </div>
+            );
+        };
 
-.form-label{font-size:.7rem;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;}
-.cat-grid2{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px;}
-.cat-chip2{
-  padding:10px 4px;border-radius:14px;border:2px solid var(--border);
-  background:var(--white);cursor:pointer;text-align:center;
-  transition:all .2s;display:flex;flex-direction:column;align-items:center;gap:3px;
-}
-.cat-chip2 .cc2-icon{font-size:1.25rem;}
-.cat-chip2 .cc2-name{font-size:.6rem;font-weight:600;color:var(--sub);}
-.cat-chip2.sel.exp-sel{border-color:var(--pink);background:var(--pink-light);}
-.cat-chip2.sel.exp-sel .cc2-name{color:var(--pink);}
-.cat-chip2.sel.inc-sel{border-color:var(--teal);background:var(--teal-light);}
-.cat-chip2.sel.inc-sel .cc2-name{color:var(--teal);}
+        const Billing = ({rooms,user,onSave}) => {
+            const [s,sS]=useState(''); const [e,sE]=useState(''); const [w,sW]=useState(''); const [c,sC]=useState(null); const vid=useRef();
+            const r = rooms.find(x=>x.id===s);
+            const cr = async () => {
+                const eu = Math.max(0,e-r.lastElecMeter); const wu = Math.max(0,w-r.lastWaterMeter);
+                const b = {id:Date.now().toString(),ownerId:user.id,roomId:r.id,roomNumber:r.number,tenantName:r.tenantName,month:new Date().getMonth()+1,year:new Date().getFullYear()+543,items:[{name:'Rent',amount:r.price},{name:'Elec',amount:eu*(user.elecUnitPrice||8),unit:eu},{name:'Water',amount:wu*(user.waterUnitPrice||18),unit:wu}],totalAmount:r.price+(eu*(user.elecUnitPrice||8))+(wu*(user.waterUnitPrice||18)),status:'PENDING',createdAt:new Date().toISOString(),elecMeterCurrent:Number(e),elecMeterPrev:r.lastElecMeter,waterMeterCurrent:Number(w),waterMeterPrev:r.lastWaterMeter};
+                await store.saveData('bills',b); await store.saveData('rooms',{...r,lastElecMeter:Number(e),lastWaterMeter:Number(w)}); onSave(b);
+            };
+            const sc = async () => { const cv = document.createElement('canvas'); cv.width=vid.current.videoWidth; cv.height=vid.current.videoHeight; cv.getContext('2d').drawImage(vid.current,0,0); const v = await scanOCR(cv.toDataURL('image/jpeg'),c); if(v){if(c==='electricity')sE(v);else sW(v);alert('Read: '+v);}else alert('Failed'); vid.current.srcObject.getTracks().forEach(t=>t.stop()); sC(null); };
+            return (
+                <div className="max-w-md mx-auto space-y-4">
+                    <h2 className="text-2xl font-serif text-cream">ออกบิล</h2>
+                    <Card className="space-y-4">
+                        <Select label="Room" value={s} onChange={ev=>sS(ev.target.value)}><option value="">Select Room</option>{rooms.map(r=><option key={r.id} value={r.id}>{r.number}</option>)}</Select>
+                        {r && <div className="grid grid-cols-2 gap-4"><div className="space-y-1"><div className="flex justify-between text-xs text-zinc-400"><span>Elec ({r.lastElecMeter})</span><button onClick={()=>{sC('electricity');navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}}).then(s=>vid.current.srcObject=s)}}><Icon name="Camera" size={14}/></button></div><Input type="number" value={e} onChange={ev=>sE(ev.target.value)}/></div><div className="space-y-1"><div className="flex justify-between text-xs text-zinc-400"><span>Water ({r.lastWaterMeter})</span><button onClick={()=>{sC('water');navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}}).then(s=>vid.current.srcObject=s)}}><Icon name="Camera" size={14}/></button></div><Input type="number" value={w} onChange={ev=>sW(ev.target.value)}/></div></div>}
+                        <Button disabled={!r||!e||!w} onClick={cr} className="w-full">Create Bill</Button>
+                    </Card>
+                    {c && <div className="fixed inset-0 z-50 bg-black flex flex-col items-center justify-center"><video ref={vid} autoPlay playsInline className="w-full max-w-md border-2 border-gold-500 rounded"/><div className="flex gap-4 mt-4"><Button onClick={sc}>Capture</Button><Button onClick={()=>sC(null)} variant="secondary">Cancel</Button></div></div>}
+                </div>
+            );
+        };
 
-.note-field{
-  width:100%;padding:12px 14px;
-  border:1px solid var(--border);border-radius:12px;
-  font-size:.9rem;font-family:inherit;outline:none;
-  background:var(--white);color:var(--text);margin-bottom:14px;
-  transition:border-color .2s;
-}
-.note-field:focus{border-color:var(--pink);}
+        const Invoice = ({bill,user,onBack,onUp}) => {
+            if(!bill) return null; const ref=useRef();
+            const tg = async () => { const s = bill.status==='PENDING'?'PAID':'PENDING'; const u = {...bill,status:s}; await store.saveData('bills',u); onUp(u); };
+            const dl = async () => { const c = await html2canvas(ref.current,{scale:2,backgroundColor:'#fff'}); const a = document.createElement('a'); a.download='inv.png'; a.href=c.toDataURL(); a.click(); };
+            return (
+                <div className="flex flex-col items-center gap-4">
+                    <div className="flex gap-2 w-full max-w-md no-print"><Button variant="secondary" onClick={onBack}>Back</Button><div className="flex-1"></div><Button onClick={tg} className={bill.status==='PAID'?'bg-zinc-700':'bg-green-600'}>{bill.status}</Button><Button onClick={dl} variant="outline"><Icon name="Download"/></Button></div>
+                    <div ref={ref} className="bg-white text-black p-6 w-full max-w-[210mm] shadow-xl text-sm">
+                        <div className="flex justify-between border-b-2 border-gold-500 pb-4 mb-4"><div className="flex gap-3 items-center">{user.dormLogo&&<img src={user.dormLogo} className="w-12 h-12 object-contain"/>}<div><h1 className="text-xl font-serif font-bold text-gold-600">{user.dormName}</h1><p>Invoice</p></div></div><div className={`border-2 px-2 py-1 font-bold ${bill.status==='PAID'?'border-green-600 text-green-600':'border-red-500 text-red-500'}`}>{bill.status}</div></div>
+                        <div className="grid grid-cols-2 gap-4 mb-4"><div className="bg-gray-50 p-2"><p><strong>Room:</strong> {bill.roomNumber}</p><p><strong>Tenant:</strong> {bill.tenantName}</p></div><div className="bg-gray-50 p-2"><p><strong>Elec:</strong> {bill.elecMeterPrev}->{bill.elecMeterCurrent}</p><p><strong>Water:</strong> {bill.waterMeterPrev}->{bill.waterMeterCurrent}</p></div></div>
+                        <table className="w-full mb-4"><thead className="bg-gold-100"><tr className="text-left"><th className="p-2">Item</th><th className="p-2 text-right">Amount</th></tr></thead><tbody>{bill.items.map((i,x)=><tr key={x} className="border-b"><td className="p-2">{i.name}</td><td className="p-2 text-right">{i.amount.toLocaleString()}</td></tr>)}</tbody><tfoot><tr className="font-bold"><td className="p-2 text-right">Total</td><td className="p-2 text-right text-gold-600">฿{bill.totalAmount.toLocaleString()}</td></tr></tfoot></table>
+                        <div className="text-xs text-gray-500 text-center"><p>PromptPay: {user.promptPayId}</p></div>
+                    </div>
+                </div>
+            );
+        };
 
-.btn-add{
-  width:100%;padding:14px;border:none;border-radius:14px;
-  font-size:1rem;font-weight:800;color:#fff;cursor:pointer;
-  transition:opacity .2s;letter-spacing:.02em;
-}
-.btn-add.exp-btn{background:var(--pink);box-shadow:0 4px 14px rgba(255,71,133,.3);}
-.btn-add.inc-btn{background:var(--teal);box-shadow:0 4px 14px rgba(0,201,167,.3);}
-.btn-add:active{transform:scale(.98);}
+        const Settings = ({user,onUp}) => {
+            const [f,sF]=useState(user); const [k,sK]=useState({k:localStorage.getItem('fb_apiKey')||'',p:localStorage.getItem('fb_projectId')||''});
+            const sv = async () => { await store.saveUser(f); onUp(f); alert('Saved'); };
+            const svK = () => { localStorage.setItem('fb_apiKey',k.k); localStorage.setItem('fb_projectId',k.p); window.location.reload(); };
+            return (
+                <div className="max-w-md mx-auto space-y-4">
+                    <h2 className="text-2xl font-serif text-cream">ตั้งค่า</h2>
+                    <Card title="หอพัก" className="space-y-3"><ImageUpload label="Logo" value={f.dormLogo} onChange={v=>sF({...f,dormLogo:v})} onRemove={()=>sF({...f,dormLogo:null})}/><Input label="Name" value={f.dormName} onChange={e=>sF({...f,dormName:e.target.value})}/><Input label="PromptPay" value={f.promptPayId} onChange={e=>sF({...f,promptPayId:e.target.value})}/><div className="grid grid-cols-2 gap-2"><Input label="Elec/Unit" type="number" value={f.elecUnitPrice} onChange={e=>sF({...f,elecUnitPrice:Number(e.target.value)})}/><Input label="Water/Unit" type="number" value={f.waterUnitPrice} onChange={e=>sF({...f,waterUnitPrice:Number(e.target.value)})}/></div><Button onClick={sv} className="w-full">Save</Button></Card>
+                    {user.role==='SUPER_ADMIN'&&<Card title="Firebase" className="space-y-3 border-gold-500/30"><Input label="API Key" value={k.k} onChange={e=>sK({...k,k:e.target.value})}/><Input label="Project ID" value={k.p} onChange={e=>sK({...k,p:e.target.value})}/><Button onClick={svK}>Connect</Button></Card>}
+                </div>
+            );
+        };
 
-/* ── หมวด/งบ PANEL ── */
-.budget-header{font-size:1.1rem;font-weight:800;text-align:center;margin-bottom:14px;}
-.period-setting-card{
-  background:var(--white);border-radius:16px;padding:14px 16px;
-  margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;
-  box-shadow:0 1px 4px rgba(0,0,0,.05);
-}
-.psc-left .psc-title{font-size:.8rem;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:.05em;}
-.psc-left .psc-val{font-size:.9rem;font-weight:600;margin-top:3px;display:flex;align-items:center;gap:5px;}
-.btn-small{
-  padding:7px 14px;border-radius:10px;border:1px solid var(--border);
-  background:var(--white);font-size:.78rem;font-weight:600;cursor:pointer;
-  display:flex;align-items:center;gap:4px;
-}
-.budget-type-tabs{
-  display:grid;grid-template-columns:1fr 1fr;gap:0;
-  background:var(--bg);border-radius:12px;padding:3px;
-  margin-bottom:12px;
-}
-.btt{
-  padding:10px;border:none;border-radius:10px;
-  font-size:.88rem;font-weight:700;cursor:pointer;
-  background:transparent;color:var(--sub);transition:all .2s;
-}
-.btt.active.exp{background:var(--white);color:var(--pink);box-shadow:0 1px 4px rgba(0,0,0,.1);}
-.btt.active.inc{background:var(--white);color:var(--teal);box-shadow:0 1px 4px rgba(0,0,0,.1);}
+        const App = () => {
+            const [u,sU]=useState(null); const [d,sD]=useState({rooms:[],bills:[],expenses:[]}); const [tab,sTab]=useState('dashboard'); const [sb,sSB]=useState(null); const [pg,sPg]=useState('intro');
+            useEffect(()=>{const s=localStorage.getItem('dormflow_session'); if(s){const ox=JSON.parse(s);sU(ox);sPg('app');ld(ox.id)}else if(localStorage.getItem('intro_seen'))sPg('login')},[]);
+            const ld=async(uid)=>{const[r,b,e]=await Promise.all([store.getData('rooms',uid),store.getData('bills',uid),store.getData('expenses',uid)]);sD({rooms:r,bills:b,expenses:e})};
+            const ln=(ux)=>{sU(ux);localStorage.setItem('dormflow_session',JSON.stringify(ux));sPg('app');ld(ux.id)};
+            if(pg==='intro')return<Intro onStart={()=>{localStorage.setItem('intro_seen','true');sPg('login')}}/>;
+            if(pg==='login')return<Login onLogin={ln}/>;
+            const render=()=>{switch(tab){case 'dashboard':return<Dashboard rooms={d.rooms} bills={d.bills} expenses={d.expenses} user={u}/>;case 'rooms':return<Rooms rooms={d.rooms} user={u} onUp={r=>sD({...d,rooms:r})}/>;case 'billing':return<Billing rooms={d.rooms} user={u} onSave={b=>{sD({...d,bills:[...d.bills,b]});sSB(b);sTab('invoice')}}/>;case 'invoice':return<Invoice bill={sb} user={u} onBack={()=>sTab('billing')} onUp={bx=>{sD({...d,bills:d.bills.map(x=>x.id===bx.id?bx:x)});sSB(bx)}}/>;case 'settings':return<Settings user={u} onUp={x=>{sU(x);localStorage.setItem('dormflow_session',JSON.stringify(x))}}/>;default:return null;}};
+            return (
+                <div className="flex min-h-screen text-gray-200 font-sans">
+                    <div className="hidden md:flex flex-col w-64 border-r border-zinc-800 p-6 bg-[#121212]"><h1 className="text-2xl font-serif text-cream mb-8">DormFlow</h1><nav className="space-y-2 flex-1">{['dashboard','rooms','billing','settings'].map(t=><button key={t} onClick={()=>sTab(t)} className={`w-full text-left px-4 py-2 rounded capitalize ${tab===t?'bg-gold-500 text-black':'text-zinc-400 hover:bg-zinc-900'}`}>{t}</button>)}</nav><button onClick={()=>{localStorage.removeItem('dormflow_session');window.location.reload()}} className="text-red-400 text-sm flex gap-2"><Icon name="LogOut" size={14}/> Logout</button></div>
+                    <div className="flex-1 p-6 md:p-10 overflow-y-auto">
+                        <div className="md:hidden flex justify-between mb-6"><h1 className="text-xl font-serif text-cream">DormFlow</h1><button onClick={()=>document.getElementById('mn').classList.toggle('hidden')}><Icon name="Menu"/></button></div>
+                        <div id="mn" className="hidden md:hidden bg-zinc-900 p-4 mb-6 rounded space-y-2">{['dashboard','rooms','billing','settings'].map(t=><button key={t} onClick={()=>{sTab(t);document.getElementById('mn').classList.add('hidden')}} className="block w-full text-left py-2 capitalize text-gold-400">{t}</button>)}<button onClick={()=>{localStorage.removeItem('dormflow_session');window.location.reload()}} className="block w-full text-left py-2 text-red-400">Logout</button></div>
+                        {render()}
+                    </div>
+                </div>
+            );
+        };
 
-.budget-list{display:flex;flex-direction:column;gap:8px;}
-.budget-item{
-  background:var(--white);border-radius:14px;padding:14px 16px;
-  display:flex;align-items:center;justify-content:space-between;
-  box-shadow:0 1px 4px rgba(0,0,0,.05);cursor:pointer;
-  transition:background .2s;
-}
-.budget-item:hover{background:#fafafa;}
-.bi-name{font-size:.92rem;font-weight:600;}
-.bi-right{display:flex;align-items:center;gap:8px;}
-.bi-budget{font-size:.8rem;color:var(--sub);}
-.bi-arrow{color:var(--sub);font-size:.8rem;}
-
-/* Budget modal */
-.overlay{
-  position:fixed;inset:0;background:rgba(0,0,0,.5);
-  backdrop-filter:blur(4px);
-  display:flex;align-items:flex-end;justify-content:center;
-  z-index:500;padding:0 0 env(safe-area-inset-bottom);
-}
-.overlay.hidden{display:none;}
-.sheet{
-  background:var(--white);border-radius:24px 24px 0 0;
-  width:100%;max-width:480px;padding:20px 20px 28px;
-}
-.sheet-handle{
-  width:40px;height:4px;border-radius:2px;
-  background:var(--border);margin:0 auto 16px;
-}
-.sheet-title{font-size:1rem;font-weight:700;margin-bottom:16px;}
-.sheet-input{
-  width:100%;padding:12px 14px;border:1px solid var(--border);
-  border-radius:12px;font-size:1rem;font-family:inherit;
-  outline:none;margin-bottom:12px;
-  background:var(--bg);color:var(--text);
-  transition:border-color .2s;
-}
-.sheet-input:focus{border-color:var(--pink);}
-.sheet-btns{display:flex;gap:10px;}
-.sheet-btns button{flex:1;padding:12px;border:none;border-radius:12px;font-size:.9rem;font-weight:700;cursor:pointer;}
-.btn-sheet-save{background:var(--pink);color:#fff;}
-.btn-sheet-save.inc-save{background:var(--teal);}
-.btn-sheet-cancel{background:var(--bg);color:var(--sub);}
-
-/* ── รายการ PANEL ── */
-.filter-row2{display:flex;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap;}
-.filter-row2 select,.filter-row2 input[type="month"]{
-  padding:8px 12px;border:1px solid var(--border);border-radius:10px;
-  font-size:.83rem;background:var(--white);color:var(--text);
-  outline:none;font-family:inherit;
-}
-.tx-list2{display:flex;flex-direction:column;gap:8px;}
-.tx2{
-  background:var(--white);border-radius:14px;padding:13px 14px;
-  display:flex;align-items:center;gap:11px;
-  box-shadow:0 1px 4px rgba(0,0,0,.05);
-}
-.tx2-icon{width:38px;height:38px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;}
-.tx2.expense .tx2-icon{background:var(--pink-light);}
-.tx2.income  .tx2-icon{background:var(--teal-light);}
-.tx2-info{flex:1;min-width:0;}
-.tx2-desc{font-size:.88rem;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.tx2-meta{font-size:.7rem;color:var(--sub);margin-top:2px;}
-.tx2-amt{font-size:.92rem;font-weight:800;flex-shrink:0;}
-.tx2.expense .tx2-amt{color:var(--pink);}
-.tx2.income  .tx2-amt{color:var(--teal);}
-.tx2-del{background:none;border:none;cursor:pointer;color:#DDD;font-size:.9rem;padding:4px;border-radius:6px;transition:color .2s;}
-.tx2-del:hover{color:var(--pink);}
-.empty2{text-align:center;padding:40px 20px;color:var(--sub);font-size:.9rem;}
-
-/* ── ตั้งค่า PANEL ── */
-.settings-card{background:var(--white);border-radius:16px;margin-bottom:10px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.05);}
-.settings-card .sc-title{font-size:.7rem;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:.06em;padding:12px 16px 4px;}
-.si2{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:14px 16px;border-bottom:1px solid var(--border);
-  cursor:pointer;transition:background .2s;
-}
-.si2:last-child{border-bottom:none;}
-.si2:hover{background:#fafafa;}
-.si2-left .si2-label{font-size:.9rem;font-weight:600;}
-.si2-left .si2-sub  {font-size:.72rem;color:var(--sub);margin-top:2px;}
-.si2-right{color:var(--sub);font-size:.85rem;}
-
-/* ── TOAST ── */
-.toast{
-  position:fixed;bottom:calc(var(--nav-h)+16px);left:50%;
-  transform:translateX(-50%) translateY(16px);
-  background:#1C1C1E;color:#fff;
-  padding:10px 20px;border-radius:20px;
-  font-size:.85rem;font-weight:600;
-  opacity:0;transition:all .3s;z-index:600;
-  white-space:nowrap;pointer-events:none;
-}
-.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
-
-/* ── RUNNING DONG ── */
-#dong-run{
-  position:fixed;bottom:calc(var(--nav-h)+8px);left:-70px;
-  font-size:2rem;animation:dong-run 16s linear infinite;
-  cursor:pointer;z-index:40;pointer-events:auto;
-}
-@keyframes dong-run{from{left:-70px}to{left:110%}}
-
-/* ── HOME BEAR ── */
-.home-bear-wrap{text-align:center;margin:4px 0 10px;font-size:2.5rem;cursor:pointer;}
-
-/* ── CHAT BOX (home) ── */
-.chat-box{
-  background:var(--white);border-radius:16px;padding:14px;
-  box-shadow:0 1px 4px rgba(0,0,0,.05);margin-bottom:14px;
-}
-
-/* ── PIE CHART ── */
-.pie-section{
-  background:var(--white);border-radius:20px;
-  padding:16px 16px 14px;margin-bottom:14px;
-  box-shadow:0 1px 6px rgba(0,0,0,.07);text-align:center;
-}
-.pie-filter-row{
-  display:flex;gap:4px;justify-content:center;
-  margin-bottom:14px;background:var(--bg);
-  border-radius:10px;padding:3px;
-}
-.pie-tab{
-  flex:1;padding:8px 12px;border:none;border-radius:8px;
-  font-size:.82rem;font-weight:700;cursor:pointer;
-  background:transparent;color:var(--sub);transition:all .2s;
-}
-.pie-tab.active{background:var(--white);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.1);}
-.pie-legend{display:flex;justify-content:center;gap:18px;margin-top:12px;flex-wrap:wrap;}
-.pie-legend-item{display:flex;align-items:center;gap:5px;font-size:.78rem;font-weight:600;}
-.pie-dot{width:11px;height:11px;border-radius:50%;flex-shrink:0;}
-
-/* ── API KEY MODAL ── */
-.modal-overlay{
-  position:fixed;inset:0;background:rgba(0,0,0,.5);
-  backdrop-filter:blur(4px);
-  display:flex;align-items:flex-end;justify-content:center;
-  z-index:600;padding:0 0 env(safe-area-inset-bottom);
-}
-.modal-overlay.hidden{display:none;}
-.modal-sheet{
-  background:var(--white);border-radius:24px 24px 0 0;
-  width:100%;max-width:480px;padding:20px 20px 28px;
-}
-.modal-sheet h3{font-size:1rem;font-weight:700;margin-bottom:6px;}
-.modal-sheet p{font-size:.78rem;color:var(--sub);margin-bottom:14px;line-height:1.5;}
-.modal-btns2{display:flex;gap:10px;margin-top:4px;}
-.modal-btns2 button{flex:1;padding:12px;border:none;border-radius:12px;font
+        createRoot(document.getElementById('root')).render(<App/>);
+    </script>
+</body>
+</html>
