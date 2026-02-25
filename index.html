@@ -68,12 +68,27 @@ body{padding-bottom:var(--nav-h);}
 
 <script>
 // 1. ตั้งค่า Firebase (ใช้ค่าเดิมของคุณหมี)
+const firebaseConfig = {// Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
   apiKey: "AIzaSyAOAr6OsQpf_e-xv8qfLyIUu6Dant1MkS4",
   authDomain: "don-note.firebaseapp.com",
   projectId: "don-note",
-  appId: "1:661381674055:web:0427dc17348fb11b56ed62"
+  storageBucket: "don-note.firebasestorage.app",
+  messagingSenderId: "661381674055",
+  appId: "1:661381674055:web:0427dc17348fb11b56ed62",
+  measurementId: "G-JSFQLQ03ZV"
 };
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);};
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
