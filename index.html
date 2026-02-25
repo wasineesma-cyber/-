@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Don Note">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="theme-color" content="#FF4785">
+<meta name="theme-color" content="#C17A3C">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
@@ -16,15 +16,15 @@
 <title>돈노트 Don Note ⭐</title>
 <style>
 :root {
-  --pink:       #FF4785;
-  --pink-light: #FFF0F5;
-  --pink-border:#FFADD2;
-  --pink-track: #FFD6E7;
+  --pink:       #C17A3C;
+  --pink-light: #FFF3E8;
+  --pink-border:#E8B87A;
+  --pink-track: #F5D5A0;
   --teal:       #00C9A7;
   --teal-light: #E8FAF7;
   --teal-border:#80E5D8;
   --teal-track: #B2F0E8;
-  --bg:         #F5F5F5;
+  --bg:         #FBF7F2;
   --white:      #FFFFFF;
   --text:       #1C1C1E;
   --sub:        #8E8E93;
@@ -438,7 +438,7 @@ body{padding-bottom:var(--nav-h);}
 /* ── SPLASH SCREEN ── */
 #splash{
   position:fixed;inset:0;z-index:9999;
-  background:#FF4785;
+  background:#C17A3C;
   display:flex;flex-direction:column;align-items:center;justify-content:center;
   gap:16px;
   transition:opacity .5s ease;
@@ -472,14 +472,14 @@ body{padding-bottom:var(--nav-h);}
 
 <!-- SPLASH SCREEN -->
 <div id="splash">
-  <div class="splash-bear">🐼</div>
+  <div class="splash-bear">🐻</div>
   <div class="splash-title">돈노트 Don Note</div>
   <div class="splash-sub">โน้ตเงินสไตล์เกาหลี ⭐</div>
 </div>
 
 <!-- INSTALL BANNER (iOS) -->
 <div id="installBanner">
-  <div class="ib-icon">🐼</div>
+  <div class="ib-icon">🐻</div>
   <div class="ib-text">
     <strong>เพิ่มไปหน้าจอหลัก</strong>
     <span>แตะ ⬡ แล้วเลือก "เพิ่มลงในหน้าจอเริ่มต้น"</span>
@@ -489,7 +489,7 @@ body{padding-bottom:var(--nav-h);}
 
 <!-- HEADER -->
 <div class="header">
-  <div class="header-bear" id="headerBear">🐼</div>
+  <div class="header-bear" id="headerBear">🐻</div>
   <div class="header-title">돈노트 Don Note ⭐</div>
   <div class="header-right" id="headerRight"></div>
 </div>
@@ -507,7 +507,7 @@ body{padding-bottom:var(--nav-h);}
   </div>
 
   <!-- Bear center home -->
-  <div class="home-bear-wrap" id="homeBear" onclick="runDong()">🐼</div>
+  <div class="home-bear-wrap" id="homeBear" onclick="runDong()">🐻</div>
 
   <!-- Quick type box (moved here from บันทึก panel) -->
   <div class="chat-box">
@@ -637,7 +637,7 @@ body{padding-bottom:var(--nav-h);}
 <!-- ════════ PANEL: ตั้งค่า ════════ -->
 <div class="panel" id="panel-settings">
   <div style="text-align:center;padding:20px 0 16px;">
-    <div id="settingsBear" style="font-size:3.5rem;cursor:pointer;" onclick="runDong()">🐼</div>
+    <div id="settingsBear" style="font-size:3.5rem;cursor:pointer;" onclick="runDong()">🐻</div>
     <div style="font-size:1rem;font-weight:700;margin-top:6px;">돈노트 Don Note ⭐</div>
     <div style="font-size:.75rem;color:var(--sub);margin-top:2px;">v2.0 · โน้ตเงินสไตล์เกาหลี</div>
   </div>
@@ -741,7 +741,7 @@ function doGet(){return ContentService.createTextOutput(JSON.stringify({status:'
 </div>
 
 <!-- Running dong -->
-<div id="dong-run">🐼</div>
+<div id="dong-run">🐻</div>
 
 <div class="toast" id="toast"></div>
 
@@ -962,7 +962,7 @@ function goPanel(id){
 
 // ══════ PERIOD (simple: this month) ══════
 function cyclePeriod(){
-  showToast('🐼 ฟีเจอร์หลายรอบงบกำลังมาเร็วๆ นี้!');
+  showToast('🐻 ฟีเจอร์หลายรอบงบกำลังมาเร็วๆ นี้!');
 }
 
 // ══════ SUMMARY TAB ══════
@@ -1075,7 +1075,7 @@ function setAmt(v){
 
 function addEntry(){
   const amt=parseFloat(document.getElementById('inputAmt').value);
-  if(!amt||amt<=0){ showToast('ใส่จำนวนเงินก่อนนะ 🐼'); return; }
+  if(!amt||amt<=0){ showToast('ใส่จำนวนเงินก่อนนะ 🐻'); return; }
   const note=document.getElementById('noteField').value.trim();
   const allCats=[...EXP_CATS,...INC_CATS];
   const cat=allCats.find(c=>c.id===selCatId)||allCats[0];
@@ -1223,7 +1223,7 @@ function renderHistory(){
   if(ft!=='all') data=data.filter(e=>e.type===ft);
   data.sort((a,b)=>b.date.localeCompare(a.date)||b.id-a.id);
   const c=document.getElementById('txList2');
-  if(!data.length){c.innerHTML=`<div class="empty2">🐼<br><br>ยังไม่มีรายการเลยนะ</div>`;return;}
+  if(!data.length){c.innerHTML=`<div class="empty2">🐻<br><br>ยังไม่มีรายการเลยนะ</div>`;return;}
   c.innerHTML=data.map(e=>`
     <div class="tx2 ${e.type}">
       <div class="tx2-icon">${e.catIcon||'💰'}</div>
@@ -1315,7 +1315,7 @@ function renderPieChart(){
 // ══════ DONG ══════
 function initDong(){
   const h=new Date().getHours();
-  const emoji=h<6?'🐼‍❄️':h<12?'🐼‍❄️':h<18?'🐼':h<22?'🐼':'🐼';
+  const emoji=h<6?'🐻‍❄️':h<12?'🐻‍❄️':h<18?'🐻':h<22?'🐻':'🐻';
   document.getElementById('dong-run').textContent=emoji;
   document.getElementById('headerBear').textContent=emoji;
   document.getElementById('settingsBear').textContent=emoji;
