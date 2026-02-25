@@ -426,6 +426,12 @@ body{padding-bottom:var(--nav-h);}
 .modal-btns2 button{flex:1;padding:12px;border:none;border-radius:12px;font-size:.9rem;font-weight:700;cursor:pointer;}
 .btn-ms-save{background:var(--pink);color:#fff;}
 .btn-ms-cancel{background:var(--bg);color:var(--sub);}
+.btn-ms-green{background:#00C9A7;color:#fff;}
+.gs-step{font-size:.78rem;color:var(--sub);line-height:1.6;margin-bottom:10px;}
+.gs-step b{color:var(--text);}
+.gs-code{background:#F5F5F5;border-radius:10px;padding:10px 12px;font-size:.7rem;font-family:monospace;color:#333;overflow-x:auto;white-space:pre;margin-bottom:12px;cursor:pointer;border:1px solid var(--border);}
+.gs-code-label{font-size:.7rem;color:var(--sub);margin-bottom:4px;}
+.sync-status{font-size:.75rem;text-align:center;margin-top:8px;color:var(--sub);}
 
 /* ── SPLASH SCREEN ── */
 #splash{
@@ -641,6 +647,17 @@ body{padding-bottom:var(--nav-h);}
     </div>
   </div>
   <div class="settings-card">
+    <div class="sc-title">Google Sheet</div>
+    <div class="si2" onclick="openSheetModal()">
+      <div class="si2-left"><div class="si2-label">📊 เชื่อม Google Sheet</div><div class="si2-sub" id="sheetUrlSub">ยังไม่ได้เชื่อม</div></div>
+      <div class="si2-right">›</div>
+    </div>
+    <div class="si2" onclick="syncToSheet()">
+      <div class="si2-left"><div class="si2-label">🔄 ซิงค์ข้อมูลไป Sheet</div><div class="si2-sub" id="syncStatusSub">กดเพื่อส่งข้อมูลทั้งหมด</div></div>
+      <div class="si2-right">›</div>
+    </div>
+  </div>
+  <div class="settings-card">
     <div class="sc-title">ข้อมูล</div>
     <div class="si2" onclick="exportData()">
       <div class="si2-left"><div class="si2-label">💾 สำรองข้อมูล</div><div class="si2-sub">ดาวน์โหลด JSON backup</div></div>
@@ -666,6 +683,48 @@ body{padding-bottom:var(--nav-h);}
   <button class="nav-btn"        id="nav-history"  onclick="goPanel('panel-history')"> <span class="ni">📋</span>รายการ</button>
   <button class="nav-btn"        id="nav-settings" onclick="goPanel('panel-settings')"><span class="ni">⚙️</span>ตั้งค่า</button>
 </nav>
+
+<!-- Google Sheet modal -->
+<div class="modal-overlay hidden" id="gsModal">
+  <div class="modal-sheet" style="max-height:85vh;overflow-y:auto;">
+    <div class="sheet-handle"></div>
+    <h3>📊 เชื่อม Google Sheet</h3>
+    <div class="gs-step">
+      <b>ขั้นตอน:</b><br>
+      1. เปิด Google Sheet ใหม่ของคุณ<br>
+      2. เมนู <b>Extensions → Apps Script</b><br>
+      3. ลบโค้ดเดิม → วางโค้ดด้านล่าง → Save<br>
+      4. <b>Deploy → New deployment → Web app</b><br>
+      5. Execute as: <b>Me</b> · Access: <b>Anyone</b><br>
+      6. Copy URL มาใส่ด้านล่าง
+    </div>
+    <div class="gs-code-label">📋 แตะเพื่อคัดลอก Apps Script:</div>
+    <div class="gs-code" id="gsCodeBlock" onclick="copyGsCode()">function doPost(e){
+  try{
+    var d=JSON.parse(e.postData.contents);
+    var ss=SpreadsheetApp.getActiveSpreadsheet();
+    var sh=ss.getSheetByName('DonNote')||ss.insertSheet('DonNote');
+    if(sh.getLastRow()===0) sh.appendRow(['วันที่','ประเภท','หมวด','ไอคอน','จำนวน','หมายเหตุ']);
+    if(d.action==='sync'){
+      if(sh.getLastRow()>1) sh.deleteRows(2,sh.getLastRow()-1);
+      d.entries.forEach(function(r){
+        sh.appendRow([r.date,r.type==='expense'?'รายจ่าย':'รายรับ',r.catName,r.catIcon,r.amount,r.note]);
+      });
+    }
+    return ContentService.createTextOutput(JSON.stringify({status:'ok'})).setMimeType(ContentService.MimeType.JSON);
+  }catch(err){
+    return ContentService.createTextOutput(JSON.stringify({status:'error',msg:err.toString()})).setMimeType(ContentService.MimeType.JSON);
+  }
+}
+function doGet(){return ContentService.createTextOutput(JSON.stringify({status:'ok'})).setMimeType(ContentService.MimeType.JSON);}</div>
+    <input class="sheet-input" id="gsUrlInput" placeholder="https://script.google.com/macros/s/..." style="font-size:.78rem;">
+    <div class="sync-status" id="gsTestStatus"></div>
+    <div class="modal-btns2" style="margin-top:10px;">
+      <button class="btn-ms-cancel" onclick="closeSheetModal()">ยกเลิก</button>
+      <button class="btn-ms-green" onclick="testAndSaveSheet()">บันทึก</button>
+    </div>
+  </div>
+</div>
 
 <!-- Budget sheet -->
 <div class="overlay hidden" id="budgetSheet">
@@ -742,6 +801,65 @@ let editCatId= null;
 let barTmrs  = [];
 let piePeriod= 'month';
 
+// ══════ GOOGLE SHEET ══════
+let gsUrl = localStorage.getItem('dong_gs_url') || '';
+
+function updateSheetSubLabel(){
+  const sub = document.getElementById('sheetUrlSub');
+  if(!sub) return;
+  sub.textContent = gsUrl ? '✅ เชื่อมแล้ว · แตะเพื่อแก้ไข' : 'ยังไม่ได้เชื่อม';
+}
+
+function openSheetModal(){
+  document.getElementById('gsUrlInput').value = gsUrl;
+  document.getElementById('gsTestStatus').textContent = '';
+  document.getElementById('gsModal').classList.remove('hidden');
+}
+function closeSheetModal(){ document.getElementById('gsModal').classList.add('hidden'); }
+
+function copyGsCode(){
+  const code = document.getElementById('gsCodeBlock').textContent;
+  navigator.clipboard?.writeText(code).then(()=>showToast('📋 คัดลอกโค้ดแล้ว!')).catch(()=>{});
+}
+
+async function testAndSaveSheet(){
+  const url = document.getElementById('gsUrlInput').value.trim();
+  if(!url){ showToast('ใส่ URL ก่อนนะคะ'); return; }
+  const st = document.getElementById('gsTestStatus');
+  st.textContent = '⏳ กำลังทดสอบ...';
+  try{
+    const r = await fetch(url, {method:'GET', mode:'no-cors'});
+    gsUrl = url;
+    localStorage.setItem('dong_gs_url', url);
+    updateSheetSubLabel();
+    st.textContent = '';
+    closeSheetModal();
+    showToast('✅ บันทึก URL แล้ว! กด "ซิงค์" เพื่อส่งข้อมูล');
+  }catch(e){
+    st.textContent = '❌ เชื่อมต่อไม่ได้ ลองตรวจ URL อีกครั้ง';
+  }
+}
+
+async function syncToSheet(){
+  if(!gsUrl){ showToast('ตั้งค่า Google Sheet URL ก่อนนะคะ'); openSheetModal(); return; }
+  const sub = document.getElementById('syncStatusSub');
+  if(sub) sub.textContent = '⏳ กำลังซิงค์...';
+  try{
+    await fetch(gsUrl, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({action:'sync', entries})
+    });
+    const now = new Date().toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'});
+    if(sub) sub.textContent = `✅ ซิงค์แล้ว ${now}`;
+    showToast(`📊 ส่ง ${entries.length} รายการไป Sheet แล้ว!`);
+  }catch(e){
+    if(sub) sub.textContent = '❌ ซิงค์ไม่สำเร็จ';
+    showToast('❌ ซิงค์ไม่สำเร็จ ลองใหม่อีกครั้ง');
+  }
+}
+
 // ══════ INIT ══════
 function init(){
   document.getElementById('filterMonth').value = todayYM();
@@ -750,6 +868,7 @@ function init(){
   renderBudgetList();
   initDong();
   renderPieChart();
+  updateSheetSubLabel();
   // chatIn Enter key + iPhone scroll fix
   const ci=document.getElementById('chatIn');
   if(ci){
