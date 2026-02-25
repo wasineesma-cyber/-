@@ -802,13 +802,25 @@ async function initLiff() {
       updateLineProfileUI();
       init();
     } else {
-      document.getElementById('lineLogin').classList.remove('hidden');
+      // เปิดนอก LINE app → ใช้ local userId แทน
+      useFallbackUserId();
     }
   } catch(e) {
     console.error('LIFF init error:', e);
-    // Fallback: ถ้า LIFF ใช้ไม่ได้ (เช่น เปิดนอก LINE) ให้โชว์ปุ่ม login
-    document.getElementById('lineLogin').classList.remove('hidden');
+    // LIFF ใช้ไม่ได้ → ใช้ local userId แทน ไม่บังคับ login
+    useFallbackUserId();
   }
+}
+
+function useFallbackUserId() {
+  let localId = localStorage.getItem('dong_local_uid');
+  if (!localId) {
+    localId = 'local_' + Math.random().toString(36).slice(2, 10);
+    localStorage.setItem('dong_local_uid', localId);
+  }
+  userId = localId;
+  document.getElementById('lineLogin').classList.add('hidden');
+  init();
 }
 
 function updateLineProfileUI() {
