@@ -1,153 +1,172 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>돈노트 Don Note ⭐</title>
-<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>돈노트 Don Note ⭐</title>
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
-<style>
-/* --- ก๊อปปี้ CSS เดิมของคุณหมีมาใส่ตรงนี้ได้เลยครับ (ผมตัดส่วน Login หน้าตาเดิมออกให้แล้ว) --- */
-:root {
-  --pink: #C17A3C; --pink-light: #FFF3E8; --pink-border:#E8B87A; --pink-track: #F5D5A0;
-  --teal: #00C9A7; --teal-light: #E8FAF7; --teal-border:#80E5D8; --teal-track: #B2F0E8;
-  --bg: #FBF7F2; --white: #FFFFFF; --text: #1C1C1E; --sub: #8E8E93; --border: #E5E5EA; --nav-h: 60px;
-}
-*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-system,sans-serif;}
-body{padding-bottom:var(--nav-h);}
+    <style>
+        :root {
+            --pink: #C17A3C; --pink-light: #FFF3E8; --pink-border:#E8B87A; --pink-track: #F5D5A0;
+            --teal: #00C9A7; --teal-light: #E8FAF7; --teal-border:#80E5D8; --teal-track: #B2F0E8;
+            --bg: #FBF7F2; --white: #FFFFFF; --text: #1C1C1E; --sub: #8E8E93; --border: #E5E5EA; --nav-h: 70px;
+        }
+        * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+        html, body { height:100%; background:var(--bg); color:var(--text); font-family:-apple-system, sans-serif; overflow: hidden; }
+        body { display: flex; flex-direction: column; }
 
-/* หน้าจอ Login ผ่าน LINE */
-.liff-login-overlay { position:fixed; inset:0; z-index:20000; background:var(--bg); display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; }
-.btn-line { background:#06C755; color:white; border:none; padding:15px 30px; border-radius:15px; font-weight:bold; font-size:1.1rem; cursor:pointer; margin-top:20px; display:flex; align-items:center; gap:10px; }
+        /* หน้าจอ Login */
+        .liff-login-overlay { position:fixed; inset:0; z-index:20000; background:var(--bg); display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; }
+        .btn-line { background:#06C755; color:white; border:none; padding:15px 30px; border-radius:15px; font-weight:bold; font-size:1.1rem; cursor:pointer; margin-top:20px; display:flex; align-items:center; gap:10px; }
 
-/* CSS ส่วนอื่นๆ ผมคงไว้ตามเดิมเพื่อให้หน้าตาสวยเหมือนเดิมครับ */
-.header{ background:var(--white); padding:12px 18px; display:flex; align-items:center; justify-content:center; position:relative; }
-.bottom-nav{ position:fixed; bottom:0; left:0; right:0; height:var(--nav-h); background:var(--white); border-top:1px solid var(--border); display:grid; grid-template-columns:repeat(5,1fr); z-index:100; }
-.nav-btn{ display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; background:none; border:none; color:var(--sub); font-size:.58rem; font-weight:600; }
-.nav-btn.active{color:var(--pink);}
-.panel{display:none; max-width:480px; margin:0 auto; padding:14px;}
-.panel.active{display:block;}
-.hidden { display:none !important; }
-/* ... (คงไว้ซึ่ง CSS สวยๆ ของคุณหมีทั้งหมด) ... */
-</style>
+        /* Header ดีไซน์เดิมของคุณหมี */
+        .header { background:var(--white); padding:15px 20px; display:flex; align-items:center; justify-content:center; position:relative; border-bottom:1px solid var(--border); }
+        .header-bear { font-size: 1.5rem; margin-right: 10px; }
+        .header-title { font-weight: 800; font-size: 1.2rem; letter-spacing: -0.5px; }
+
+        /* Main Content */
+        .main-content { flex: 1; overflow-y: auto; padding-bottom: 20px; }
+        .panel { display:none; max-width:480px; margin:0 auto; padding:20px; }
+        .panel.active { display:block; }
+
+        /* การ์ดสรุปยอด */
+        .balance-section { text-align:center; padding:30px 0; }
+        .bal-label { font-size:0.85rem; color:var(--sub); font-weight:600; margin-bottom:5px; }
+        .bal-amount { font-size:3rem; font-weight:900; letter-spacing:-1px; }
+
+        /* ตารางหมวดหมู่ (ที่คุณหมีชอบ) */
+        .cat-table { background:var(--white); border-radius:24px; padding:10px; border:1px solid var(--border); }
+        .cat-row { display:flex; align-items:center; padding:12px 15px; border-bottom:1px solid #F5F5F7; }
+        .cat-row:last-child { border-bottom:none; }
+        .cat-icon { width:40px; height:40px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:1.2rem; margin-right:12px; }
+        .cat-info { flex:1; }
+        .cat-name { font-weight:700; font-size:0.95rem; }
+        .cat-bar-bg { height:6px; background:#F2F2F7; border-radius:3px; margin-top:6px; overflow:hidden; }
+        .cat-bar-fill { height:100%; border-radius:3px; }
+        .cat-val { text-align:right; font-weight:700; font-size:0.95rem; }
+
+        /* Nav ด้านล่าง */
+        .bottom-nav { height:var(--nav-h); background:rgba(255,255,255,0.8); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border-top:1px solid var(--border); display:grid; grid-template-columns:repeat(3,1fr); padding-bottom: env(safe-area-inset-bottom); }
+        .nav-btn { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; background:none; border:none; color:var(--sub); font-size:0.7rem; font-weight:700; transition: 0.2s; }
+        .nav-btn.active { color:var(--pink); }
+        .nav-icon { font-size: 1.4rem; }
+
+        .hidden { display:none !important; }
+    </style>
 </head>
 <body>
 
 <div id="liffLoginScreen" class="liff-login-overlay">
-  <div style="font-size: 5rem;">🐻</div>
-  <h2 style="color:var(--pink);">Don Note</h2>
-  <p style="color:var(--sub); margin-top:10px;">ยินดีต้อนรับครับคุณหมี<br>กรุณาเข้าสู่ระบบเพื่อใช้งาน</p>
-  <button class="btn-line" onclick="liff.login()">
-    <img src="https://upload.wikimedia.org/wikipedia/commons/4/41/LINE_logo.svg" width="20"> Login with LINE
-  </button>
+    <div style="font-size: 5rem;">🐻</div>
+    <h2 style="color:var(--pink);">Don Note</h2>
+    <p style="color:var(--sub); margin-top:10px;">กรุณาเข้าสู่ระบบเพื่อดูสมุดบันทึก</p>
+    <button class="btn-line" onclick="liff.login()">Login with LINE</button>
 </div>
 
-<div id="appBody" class="hidden">
+<div id="appBody" class="hidden" style="height: 100%; display: flex; flex-direction: column;">
     <div class="header">
-      <div class="header-bear">🐻</div>
-      <div class="header-title" id="userNameTitle">Don Note ⭐</div>
+        <span class="header-bear">🐻</span>
+        <span class="header-title" id="userNameTitle">Don Note ⭐</span>
     </div>
 
-    <div class="panel active" id="panel-home">
-        <div style="text-align:center; margin-bottom:20px;">
-            <div style="font-size:0.8rem; color:var(--sub);">เหลือเก็บ</div>
-            <div id="balAmount" style="font-size:2.5rem; font-weight:900;">฿0</div>
+    <div class="main-content">
+        <div class="panel active" id="panel-home">
+            <div class="balance-section">
+                <div class="bal-label">เงินคงเหลือทั้งหมด</div>
+                <div class="bal-amount" id="balAmount">฿0</div>
+            </div>
+
+            <div class="cat-table">
+                <div class="cat-row">
+                    <div class="cat-icon" style="background:var(--pink-light);">💰</div>
+                    <div class="cat-info">
+                        <div class="cat-name">รายรับ</div>
+                        <div class="cat-bar-bg"><div class="cat-bar-fill" style="width:70%; background:var(--pink);"></div></div>
+                    </div>
+                    <div class="cat-val" style="color:var(--pink);">฿0</div>
+                </div>
+                <div class="cat-row">
+                    <div class="cat-icon" style="background:var(--teal-light);">💸</div>
+                    <div class="cat-info">
+                        <div class="cat-name">รายจ่าย</div>
+                        <div class="cat-bar-bg"><div class="cat-bar-fill" style="width:40%; background:var(--teal);"></div></div>
+                    </div>
+                    <div class="cat-val" style="color:var(--teal);">฿0</div>
+                </div>
+            </div>
         </div>
-        <div id="catRows"></div>
+
+        <div class="panel" id="panel-add">
+            <h3 style="text-align:center;">เพิ่มบันทึกใหม่</h3>
+        </div>
+
+        <div class="panel" id="panel-history">
+            <h3 style="text-align:center;">รายการย้อนหลัง</h3>
+        </div>
     </div>
 
     <nav class="bottom-nav">
-        <button class="nav-btn active" onclick="goPanel('panel-home')">🏠สรุป</button>
-        <button class="nav-btn" onclick="goPanel('panel-add')">✏️บันทึก</button>
-        <button class="nav-btn" onclick="goPanel('panel-history')">📋รายการ</button>
+        <button class="nav-btn active" onclick="goPanel('panel-home', this)">
+            <span class="nav-icon">🏠</span><span>สรุป</span>
+        </button>
+        <button class="nav-btn" onclick="goPanel('panel-add', this)">
+            <span class="nav-icon">✏️</span><span>บันทึก</span>
+        </button>
+        <button class="nav-btn" onclick="goPanel('panel-history', this)">
+            <span class="nav-icon">📋</span><span>รายการ</span>
+        </button>
     </nav>
 </div>
 
 <script>
-// 1. ตั้งค่า Firebase (ใช้ค่าเดิมของคุณหมี)
-const firebaseConfig = {// Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
-
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-  apiKey: "AIzaSyAOAr6OsQpf_e-xv8qfLyIUu6Dant1MkS4",
-  authDomain: "don-note.firebaseapp.com",
-  projectId: "don-note",
-  storageBucket: "don-note.firebasestorage.app",
-  messagingSenderId: "661381674055",
-  appId: "1:661381674055:web:0427dc17348fb11b56ed62",
-  measurementId: "G-JSFQLQ03ZV"
+    apiKey: "AIzaSyAOAr6OsQpf_e-xv8qfLyIUu6Dant1MkS4",
+    authDomain: "don-note.firebaseapp.com",
+    projectId: "don-note",
+    storageBucket: "don-note.firebasestorage.app",
+    messagingSenderId: "661381674055",
+    appId: "1:661381674055:web:0427dc17348fb11b56ed62"
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);};
-firebase.initializeApp(firebaseConfig);
+if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
-
-// 2. ตั้งค่า LIFF ID (คุณหมีใส่ตรงนี้ได้เลยครับ)
 const MY_LIFF_ID = "2009225343-VWodtDEA"; 
 
 let userId = "";
-let entries = [];
 
-// 3. เริ่มต้นระบบ (เช็ค LINE อย่างเดียว)
 async function initLiff() {
     try {
         await liff.init({ liffId: MY_LIFF_ID });
         if (liff.isLoggedIn()) {
             const profile = await liff.getProfile();
-            userId = profile.userId; // ใช้ LINE User ID เป็นตัวเก็บข้อมูล
-            
+            userId = profile.userId;
             document.getElementById('liffLoginScreen').classList.add('hidden');
-            document.getElementById('appBody').classList.remove('hidden');
+            document.getElementById('appBody').style.display = 'flex';
             document.getElementById('userNameTitle').textContent = profile.displayName + " ⭐";
-            
-            loadData(); // ดึงข้อมูลจาก Firebase
-        } else {
-            // ถ้ายังไม่ Login ให้ค้างหน้าเขียวไว้
-            document.getElementById('liffLoginScreen').classList.remove('hidden');
+            loadData();
         }
-    } catch (err) {
-        console.error("LIFF Init Error", err);
+    } catch (err) { console.error(err); }
+}
+
+function goPanel(id, btn) {
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+}
+
+async function loadData() {
+    // โหลดข้อมูลจาก Firebase มาอัปเดตหน้าจอ
+    const doc = await db.collection("dongNote").doc(userId).get();
+    if (doc.exists) {
+        // อัปเดตตัวเลขในหน้าจอ (ถ้ามีข้อมูล)
     }
 }
 
-// 4. ดึงข้อมูลจาก Firebase
-async function loadData() {
-    db.collection("dongNote").doc(userId).get().then((doc) => {
-        if (doc.exists) {
-            entries = doc.data().entries || [];
-            renderAll(); // สั่งวาดหน้าจอใหม่
-        }
-    });
-}
-
-// 5. บันทึกข้อมูล (ส่งไปที่ Firebase ทันที)
-async function saveData() {
-    await db.collection("dongNote").doc(userId).set({
-        entries: entries,
-        updatedAt: new Date().toISOString()
-    });
-}
-
-// ฟังก์ชันอื่นๆ (goPanel, renderAll) คุณหมีสามารถใช้ของเดิมได้เลยครับ
-
-function goPanel(id) {
-    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-    document.getElementById(id).classList.add('active');
-}
-
-// เรียกใช้งาน
 initLiff();
 </script>
-
 </body>
 </html>
