@@ -690,7 +690,7 @@ body{padding-bottom:var(--nav-h);}
       <div class="si2-left"><div class="si2-label">📊 เชื่อม Google Sheet</div><div class="si2-sub" id="sheetUrlSub">ยังไม่ได้เชื่อม</div></div>
       <div class="si2-right">›</div>
     </div>
-    <div class="si2" onclick="syncToSheet(  if(!canUse('sheetSync')) { showToast('🔒 ซิงค์ Sheet สำหรับ Pro'); return; })">
+    <div class="si2" onclick="syncToSheet()">
       <div class="si2-left"><div class="si2-label">🔄 ซิงค์ข้อมูลไป Sheet</div><div class="si2-sub" id="syncStatusSub">กดเพื่อส่งข้อมูลทั้งหมด</div></div>
       <div class="si2-right">›</div>
     </div>
@@ -792,7 +792,53 @@ const LIFF_ID = '2009230946-hp9vcPh3';
 let userId = null;
 let lineProfile = null;
 
+async function initLiff() {
+  try {
+    await liff.init({ liffId: LIFF_ID });
+    if (liff.isLoggedIn()) {
+      lineProfile = await liff.getProfile();
+      userId = lineProfile.userId;
+      document.getElementById('lineLogin').classList.add('hidden');
+      updateLineProfileUI();
+      init();
+    } else {
+      // เปิดนอก LINE app → ใช้ local userId แทน
+      useFallbackUserId();
+    }
+  } catch(e) {
+    console.error('LIFF init error:', e);
+    // LIFF ใช้ไม่ได้ → ใช้ local userId แทน ไม่บังคับ login
+    useFallbackUserId();
+  }
+}
 
+function useFallbackUserId() {
+  let localId = localStorage.getItem('dong_local_uid');
+  if (!localId) {
+    localId = 'local_' + Math.random().toString(36).slice(2, 10);
+    localStorage.setItem('dong_local_uid', localId);
+  }
+  userId = localId;
+  document.getElementById('lineLogin').classList.add('hidden');
+  init();
+}
+
+function updateLineProfileUI() {
+  if (!lineProfile) return;
+  // Header
+  const hb = document.getElementById('headerBear');
+  if (hb && lineProfile.pictureUrl) {
+    hb.innerHTML = `<img src="${lineProfile.pictureUrl}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;">`;
+  }
+  // Settings
+  const nameEl = document.getElementById('lineNameDisplay');
+  if (nameEl) nameEl.textContent = lineProfile.displayName;
+  const picEl = document.getElementById('linePicDisplay');
+  if (picEl && lineProfile.pictureUrl) {
+    picEl.src = lineProfile.pictureUrl;
+    picEl.style.display = 'block';
+  }
+}
 async function initLiff() {
   try {
     // 1. เชื่อมต่อกับระบบ LINE
@@ -845,7 +891,7 @@ function updateLineProfileUI() {
 
 
 
-async function saveToCloud(  if(!canUse('cloudSync')) { updateCloudStatus('🔒 โปรเท่านั้น'); return; }) {
+async function saveToCloud() {
   try {
     await db.collection('dongNote').doc(userId).set({
       entries: entries,
@@ -908,19 +954,7 @@ const INC_COLORS = {
   sell:'#FF9500', invest:'#AF52DE', gift:'#FF2D55', other_i:'#8E8E93'
 };
 const TH_MS = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
-// ══════ FEATURE FLAGS (เผื่อจำกัดฟีเจอร์ในอนาคต) ══════
-// ตอนนี้เปิดให้ใช้ฟรีทั้งหมด (true หมด)
-const FEATURES = {
-  budgets: true,      // เมนูหมวด/งบ
-  cloudSync: true,    // ซิงค์ Firebase
-  sheetSync: true,    // ซิงค์ Google Sheet
-  export: true,       // ส่งออกข้อมูล (อนาคต)
-  proBanner: true     // แบนเนอร์ชวน Pro (อนาคต)
-};
 
-function canUse(key){
-  return FEATURES[key] !== false;
-}
 // ══════ STATE ══════
 let entries  = JSON.parse(localStorage.getItem('dong_entries') || '[]');
 let budgets  = JSON.parse(localStorage.getItem('dong_budgets') || '{}'); // {catId: amount}
@@ -1023,7 +1057,7 @@ function fmt0(n){ return Number(n).toLocaleString('th-TH',{minimumFractionDigits
 function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
 // ══════ PANEL NAV ══════
-function goPanel(id){  if(id === 'panel-budget' && !canUse('budgets')) { showToast('🔒 ฟีเจอร์นี้สำหรับ Pro'); return; }
+function goPanel(id){
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById(id).classList.add('active');
@@ -1447,7 +1481,3 @@ if ('serviceWorker' in navigator) {
 </script>
 </body>
 </html>
-
-
-
-ปรับแอพเราให้มีฟังชั่นเพิ่มแนวนี้ได้มั้ยค่ะ เราอยากจำกัดฟีเจอตามการใช้
