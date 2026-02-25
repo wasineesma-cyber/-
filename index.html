@@ -1023,7 +1023,7 @@ function fmt0(n){ return Number(n).toLocaleString('th-TH',{minimumFractionDigits
 function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
 // ══════ PANEL NAV ══════
-function goPanel(id){
+function goPanel(id){  if(id === 'panel-budget' && !canUse('budgets')) { showToast('🔒 ฟีเจอร์นี้สำหรับ Pro'); return; }
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById(id).classList.add('active');
