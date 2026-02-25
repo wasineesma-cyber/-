@@ -845,7 +845,7 @@ function updateLineProfileUI() {
 
 
 
-async function saveToCloud() {
+async function saveToCloud(  if(!canUse('cloudSync')) { updateCloudStatus('🔒 โปรเท่านั้น'); return; }) {
   try {
     await db.collection('dongNote').doc(userId).set({
       entries: entries,
