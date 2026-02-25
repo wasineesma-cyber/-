@@ -908,7 +908,19 @@ const INC_COLORS = {
   sell:'#FF9500', invest:'#AF52DE', gift:'#FF2D55', other_i:'#8E8E93'
 };
 const TH_MS = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+// ══════ FEATURE FLAGS (เผื่อจำกัดฟีเจอร์ในอนาคต) ══════
+// ตอนนี้เปิดให้ใช้ฟรีทั้งหมด (true หมด)
+const FEATURES = {
+  budgets: true,      // เมนูหมวด/งบ
+  cloudSync: true,    // ซิงค์ Firebase
+  sheetSync: true,    // ซิงค์ Google Sheet
+  export: true,       // ส่งออกข้อมูล (อนาคต)
+  proBanner: true     // แบนเนอร์ชวน Pro (อนาคต)
+};
 
+function canUse(key){
+  return FEATURES[key] !== false;
+}
 // ══════ STATE ══════
 let entries  = JSON.parse(localStorage.getItem('dong_entries') || '[]');
 let budgets  = JSON.parse(localStorage.getItem('dong_budgets') || '{}'); // {catId: amount}
