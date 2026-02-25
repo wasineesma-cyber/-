@@ -468,7 +468,7 @@ body{padding-bottom:var(--nav-h);}
 .ib-btn{background:var(--pink);color:#fff;border:none;border-radius:10px;padding:8px 14px;font-size:.82rem;font-weight:700;cursor:pointer;white-space:nowrap;}
 .ib-close{background:none;border:none;color:var(--sub);font-size:1.2rem;cursor:pointer;padding:4px;flex-shrink:0;}
 
-/* ── PHONE LOGIN ── */
+/* ── LOGIN MODAL ── */
 .phone-modal-overlay{
   position:fixed;inset:0;z-index:10000;
   background:var(--bg);
@@ -484,7 +484,7 @@ body{padding-bottom:var(--nav-h);}
 }
 .pm-bear{font-size:3.5rem;margin-bottom:8px;}
 .pm-title{font-size:1.2rem;font-weight:800;margin-bottom:4px;}
-.pm-sub{font-size:.82rem;color:var(--sub);margin-bottom:24px;}
+.pm-sub{font-size:.82rem;color:var(--sub);margin-bottom:24px;line-height:1.5;}
 .pm-step{display:flex;flex-direction:column;gap:12px;}
 .pm-step.hidden{display:none;}
 .pm-label{font-size:.72rem;font-weight:700;color:var(--sub);text-align:left;text-transform:uppercase;letter-spacing:.05em;}
@@ -494,48 +494,79 @@ body{padding-bottom:var(--nav-h);}
   flex:1;border:1.5px solid var(--border);border-radius:12px;
   padding:12px 14px;font-size:1rem;font-family:inherit;
   background:var(--white);color:var(--text);outline:none;
-  transition:border-color .2s;
+  transition:border-color .2s;width:100%;
 }
 .pm-input:focus{border-color:var(--pink);}
 .pm-btn{
   width:100%;padding:14px;border:none;border-radius:14px;
   background:var(--pink);color:#fff;font-size:1rem;font-weight:800;
   cursor:pointer;margin-top:4px;transition:opacity .2s;
+  display:flex;align-items:center;justify-content:center;gap:8px;
 }
 .pm-btn:disabled{opacity:.5;cursor:default;}
+.pm-btn-outline{
+  background:var(--white);color:var(--pink);
+  border:2px solid var(--pink);
+}
 .pm-otp-hint{font-size:.82rem;color:var(--sub);text-align:center;}
 .pm-back{background:none;border:none;color:var(--sub);font-size:.82rem;cursor:pointer;margin-top:4px;}
+.pm-toggle{font-size:.8rem;color:var(--sub);cursor:pointer;margin-top:4px;}
+.pm-toggle span{color:var(--pink);font-weight:700;text-decoration:underline;}
+.pm-error{font-size:.78rem;color:#FF3B30;text-align:left;display:none;}
+.pm-divider{display:flex;align-items:center;gap:10px;color:var(--sub);font-size:.75rem;}
+.pm-divider::before,.pm-divider::after{content:'';flex:1;border-top:1px solid var(--border);}
 </style>
 </head>
 <body>
 
-<!-- PHONE LOGIN MODAL -->
+<!-- LOGIN MODAL -->
 <div id="phoneModal" class="phone-modal-overlay hidden">
   <div class="phone-modal">
     <div class="pm-bear">🐻</div>
     <div class="pm-title">돈노트 Don Note</div>
-    <div class="pm-sub">เข้าสู่ระบบด้วยเบอร์มือถือ<br>ข้อมูลจะปลอดภัยแม้ลงแอปใหม่</div>
+    <div class="pm-sub">เข้าสู่ระบบเพื่อให้ข้อมูล<br>ปลอดภัยแม้ลงแอปใหม่</div>
+
+    <!-- Step 0: เลือกวิธี -->
+    <div class="pm-step" id="pmChoiceStep">
+      <button class="pm-btn" onclick="showStep('phone')">📱 เบอร์มือถือ (OTP)</button>
+      <div class="pm-divider">หรือ</div>
+      <button class="pm-btn pm-btn-outline" onclick="showStep('email')">📧 อีเมล + รหัสผ่าน</button>
+    </div>
 
     <!-- Step 1: เบอร์ -->
-    <div class="pm-step" id="pmPhoneStep">
-      <div class="pm-label">เบอร์มือถือ</div>
+    <div class="pm-step hidden" id="pmPhoneStep">
+      <div class="pm-label">เบอร์มือถือ (ไทย)</div>
       <div class="pm-phone-row">
         <div class="pm-prefix">🇹🇭 +66</div>
         <input class="pm-input" id="phoneInput" type="tel" placeholder="0812345678" inputmode="numeric" maxlength="10">
       </div>
+      <div class="pm-error" id="phoneError"></div>
       <button class="pm-btn" id="sendOtpBtn" onclick="sendOtp()">ส่ง OTP ทาง SMS</button>
+      <button class="pm-back" onclick="showStep('choice')">← เลือกวิธีอื่น</button>
     </div>
 
     <!-- Step 2: OTP -->
     <div class="pm-step hidden" id="pmOtpStep">
-      <div class="pm-otp-hint">ใส่รหัส 6 ตัวที่ได้รับ SMS</div>
-      <input class="pm-input" id="otpInput" type="tel" placeholder="123456" inputmode="numeric" maxlength="6" style="text-align:center;letter-spacing:.2em;font-size:1.4rem;">
-      <button class="pm-btn" id="verifyOtpBtn" onclick="verifyOtp()">เข้าสู่ระบบ</button>
-      <button class="pm-back" onclick="backToPhone()">← เปลี่ยนเบอร์</button>
+      <div class="pm-otp-hint">ใส่รหัส 6 ตัวที่ได้รับทาง SMS</div>
+      <input class="pm-input" id="otpInput" type="tel" placeholder="123456" inputmode="numeric" maxlength="6" style="text-align:center;letter-spacing:.3em;font-size:1.6rem;font-weight:800;">
+      <div class="pm-error" id="otpError"></div>
+      <button class="pm-btn" id="verifyOtpBtn" onclick="verifyOtp()">✅ เข้าสู่ระบบ</button>
+      <button class="pm-back" onclick="showStep('phone')">← เปลี่ยนเบอร์</button>
+    </div>
+
+    <!-- Step 3: อีเมล -->
+    <div class="pm-step hidden" id="pmEmailStep">
+      <div class="pm-label" id="emailModeLabel">เข้าสู่ระบบด้วยอีเมล</div>
+      <input class="pm-input" id="emailInput" type="email" placeholder="bear@example.com" inputmode="email" autocomplete="email">
+      <input class="pm-input" id="passInput" type="password" placeholder="รหัสผ่าน (6 ตัวขึ้นไป)" autocomplete="current-password">
+      <div class="pm-error" id="emailError"></div>
+      <button class="pm-btn" id="emailAuthBtn" onclick="emailAuth()">เข้าสู่ระบบ</button>
+      <div class="pm-toggle" id="emailToggle" onclick="toggleEmailMode()">ยังไม่มีบัญชี? <span>สมัครสมาชิก</span></div>
+      <button class="pm-back" onclick="showStep('choice')">← เลือกวิธีอื่น</button>
     </div>
   </div>
 </div>
-<div id="recaptcha-container"></div>
+<div id="recaptcha-container" style="position:fixed;bottom:0;left:0;z-index:9999;"></div>
 
 <!-- SPLASH SCREEN -->
 <div id="splash">
@@ -714,7 +745,7 @@ body{padding-bottom:var(--nav-h);}
       <div class="si2-left"><div class="si2-label">☁️ สถานะ Firebase</div><div class="si2-sub" id="cloudStatusSub">⏳ กำลังเชื่อมต่อ...</div></div>
     </div>
     <div class="si2">
-      <div class="si2-left"><div class="si2-label">📱 เบอร์มือถือที่ล็อกอิน</div><div class="si2-sub" id="userPhoneDisplay">-</div></div>
+      <div class="si2-left"><div class="si2-label">👤 บัญชีที่ล็อกอิน</div><div class="si2-sub" id="userPhoneDisplay">-</div></div>
     </div>
     <div class="si2" onclick="signOutUser()" style="cursor:pointer;">
       <div class="si2-left"><div class="si2-label" style="color:var(--pink);">🚪 ออกจากระบบ</div><div class="si2-sub">ข้อมูลยังอยู่ใน Firebase ปลอดภัย</div></div>
@@ -825,69 +856,136 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 const auth = firebase.auth();
 
-// ══════ PHONE AUTH ══════
+// ══════ AUTH STATE ══════
 let userId = null;
 let confirmResult = null;
 let recapVerifier = null;
+let emailMode = 'login'; // 'login' | 'register'
 
 auth.onAuthStateChanged(user => {
   if (user) {
     userId = user.uid;
     document.getElementById('phoneModal').classList.add('hidden');
     const ph = document.getElementById('userPhoneDisplay');
-    if (ph) ph.textContent = user.phoneNumber || userId.slice(0,16)+'...';
+    if (ph) ph.textContent = user.phoneNumber || user.email || userId.slice(0,16)+'...';
     init();
   } else {
+    showStep('choice');
     document.getElementById('phoneModal').classList.remove('hidden');
   }
 });
 
+function showStep(step) {
+  ['pmChoiceStep','pmPhoneStep','pmOtpStep','pmEmailStep'].forEach(id => {
+    document.getElementById(id).classList.add('hidden');
+  });
+  const map = {choice:'pmChoiceStep', phone:'pmPhoneStep', otp:'pmOtpStep', email:'pmEmailStep'};
+  if (map[step]) document.getElementById(map[step]).classList.remove('hidden');
+}
+
+function setErr(id, msg) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = msg;
+  el.style.display = msg ? 'block' : 'none';
+}
+
+// ── Phone OTP ──
 async function sendOtp() {
+  setErr('phoneError','');
   const raw = document.getElementById('phoneInput').value.trim().replace(/\D/g,'');
-  if (raw.length < 9) { showToast('ใส่เบอร์ให้ครบก่อนนะ 🐻'); return; }
-  let num = raw.startsWith('0') ? '+66'+raw.slice(1) : '+66'+raw;
+  if (raw.length < 9) { setErr('phoneError','ใส่เบอร์ให้ครบ 9-10 หลักก่อนนะ'); return; }
+  let num = raw.startsWith('0') ? '+66'+raw.slice(1) : (raw.startsWith('66') ? '+'+raw : '+66'+raw);
+
   if (!recapVerifier) {
     recapVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {size:'invisible'});
+    await recapVerifier.render();
   }
   const btn = document.getElementById('sendOtpBtn');
-  btn.disabled = true; btn.textContent = 'กำลังส่ง...';
+  btn.disabled = true; btn.textContent = '⏳ กำลังส่ง...';
   try {
     confirmResult = await auth.signInWithPhoneNumber(num, recapVerifier);
-    document.getElementById('pmPhoneStep').classList.add('hidden');
-    document.getElementById('pmOtpStep').classList.remove('hidden');
-    showToast('✅ ส่ง OTP แล้ว!');
+    showStep('otp');
+    document.getElementById('otpInput').focus();
   } catch(e) {
-    showToast('❌ ส่งไม่ได้ ลองใหม่นะ');
+    console.error('sendOtp:', e);
+    const msgs = {
+      'auth/invalid-phone-number': 'เบอร์โทรไม่ถูกต้อง',
+      'auth/too-many-requests': 'ส่ง OTP บ่อยเกินไป รอสักครู่',
+      'auth/operation-not-allowed': 'Phone Auth ยังไม่ได้เปิดใน Firebase Console',
+      'auth/captcha-check-failed': 'reCAPTCHA ล้มเหลว ลองรีเฟรชหน้า',
+    };
+    setErr('phoneError', msgs[e.code] || e.message);
     btn.disabled = false; btn.textContent = 'ส่ง OTP ทาง SMS';
     if (recapVerifier) { recapVerifier.clear(); recapVerifier = null; }
   }
 }
 
 async function verifyOtp() {
+  setErr('otpError','');
   const code = document.getElementById('otpInput').value.trim();
-  if (code.length !== 6) { showToast('ใส่รหัส 6 หลักก่อนนะ'); return; }
+  if (code.length !== 6) { setErr('otpError','ใส่รหัส 6 หลักก่อนนะ'); return; }
   const btn = document.getElementById('verifyOtpBtn');
-  btn.disabled = true; btn.textContent = 'กำลังตรวจสอบ...';
+  btn.disabled = true; btn.textContent = '⏳ กำลังตรวจสอบ...';
   try {
     await confirmResult.confirm(code);
-    // onAuthStateChanged will fire and call init()
+    // onAuthStateChanged fires → calls init()
   } catch(e) {
-    showToast('❌ รหัสไม่ถูก ลองใหม่นะ 🐻');
-    btn.disabled = false; btn.textContent = 'เข้าสู่ระบบ';
+    console.error('verifyOtp:', e);
+    setErr('otpError', e.code === 'auth/invalid-verification-code' ? 'รหัสไม่ถูก ลองใหม่นะ' : e.message);
+    btn.disabled = false; btn.textContent = '✅ เข้าสู่ระบบ';
   }
 }
 
-function backToPhone() {
-  document.getElementById('pmOtpStep').classList.add('hidden');
-  document.getElementById('pmPhoneStep').classList.remove('hidden');
-  document.getElementById('sendOtpBtn').disabled = false;
-  document.getElementById('sendOtpBtn').textContent = 'ส่ง OTP ทาง SMS';
+// ── Email Auth ──
+function toggleEmailMode() {
+  emailMode = emailMode === 'login' ? 'register' : 'login';
+  document.getElementById('emailModeLabel').textContent =
+    emailMode === 'register' ? 'สมัครสมาชิกใหม่' : 'เข้าสู่ระบบด้วยอีเมล';
+  document.getElementById('emailAuthBtn').textContent =
+    emailMode === 'register' ? 'สมัครสมาชิก' : 'เข้าสู่ระบบ';
+  document.getElementById('emailToggle').innerHTML =
+    emailMode === 'register' ? 'มีบัญชีแล้ว? <span>เข้าสู่ระบบ</span>' : 'ยังไม่มีบัญชี? <span>สมัครสมาชิก</span>';
+  document.getElementById('passInput').autocomplete =
+    emailMode === 'register' ? 'new-password' : 'current-password';
+  setErr('emailError','');
+}
+
+async function emailAuth() {
+  setErr('emailError','');
+  const email = document.getElementById('emailInput').value.trim();
+  const pass  = document.getElementById('passInput').value;
+  if (!email.includes('@')) { setErr('emailError','ใส่อีเมลให้ถูกต้อง'); return; }
+  if (pass.length < 6)       { setErr('emailError','รหัสผ่านต้องมีอย่างน้อย 6 ตัว'); return; }
+  const btn = document.getElementById('emailAuthBtn');
+  btn.disabled = true; btn.textContent = '⏳ กำลังตรวจสอบ...';
+  try {
+    if (emailMode === 'register') {
+      await auth.createUserWithEmailAndPassword(email, pass);
+    } else {
+      await auth.signInWithEmailAndPassword(email, pass);
+    }
+    // onAuthStateChanged fires → calls init()
+  } catch(e) {
+    console.error('emailAuth:', e);
+    const msgs = {
+      'auth/user-not-found':        'ไม่พบบัญชีนี้ ลองกด "สมัครสมาชิก"',
+      'auth/wrong-password':        'รหัสผ่านไม่ถูก ลองใหม่นะ',
+      'auth/email-already-in-use':  'อีเมลนี้มีบัญชีแล้ว ลองเข้าสู่ระบบ',
+      'auth/weak-password':         'รหัสผ่านสั้นเกินไป ใส่ 6 ตัวขึ้นไป',
+      'auth/invalid-email':         'รูปแบบอีเมลไม่ถูกต้อง',
+      'auth/operation-not-allowed': 'Email Auth ยังไม่ได้เปิดใน Firebase Console',
+      'auth/invalid-credential':    'อีเมลหรือรหัสผ่านไม่ถูกต้อง',
+    };
+    setErr('emailError', msgs[e.code] || e.message);
+    btn.disabled = false;
+    btn.textContent = emailMode === 'register' ? 'สมัครสมาชิก' : 'เข้าสู่ระบบ';
+  }
 }
 
 async function signOutUser() {
   if (!confirm('ออกจากระบบ? ข้อมูลยังอยู่ใน Firebase ปลอดภัย 🐻')) return;
   await auth.signOut();
-  showToast('ออกจากระบบแล้ว');
 }
 
 async function saveToCloud() {
