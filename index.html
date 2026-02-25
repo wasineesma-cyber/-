@@ -11,6 +11,8 @@
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 <title>돈노트 Don Note ⭐</title>
 <style>
 :root {
@@ -640,6 +642,20 @@ body{padding-bottom:var(--nav-h);}
     <div style="font-size:.75rem;color:var(--sub);margin-top:2px;">v2.0 · โน้ตเงินสไตล์เกาหลี</div>
   </div>
   <div class="settings-card">
+    <div class="sc-title">☁️ Cloud Sync</div>
+    <div class="si2">
+      <div class="si2-left"><div class="si2-label">☁️ สถานะ Firebase</div><div class="si2-sub" id="cloudStatusSub">⏳ กำลังเชื่อมต่อ...</div></div>
+    </div>
+    <div class="si2" onclick="copyUserId()">
+      <div class="si2-left"><div class="si2-label">🔑 User ID ของคุณ</div><div class="si2-sub" id="userIdDisplay">-</div></div>
+      <div class="si2-right">📋</div>
+    </div>
+    <div class="si2" onclick="changeUserId()">
+      <div class="si2-left"><div class="si2-label">🔄 ซิงค์จากเครื่องอื่น</div><div class="si2-sub">ใส่ User ID เครื่องเก่าเพื่อดึงข้อมูล</div></div>
+      <div class="si2-right">›</div>
+    </div>
+  </div>
+  <div class="settings-card">
     <div class="sc-title">AI</div>
     <div class="si2" onclick="openApiModal()">
       <div class="si2-left"><div class="si2-label">🔑 Claude API Key</div><div class="si2-sub">ใส่เพื่อใช้ AI ช่วยจัดหมวดหมู่</div></div>
@@ -760,6 +776,75 @@ function doGet(){return ContentService.createTextOutput(JSON.stringify({status:'
 <div class="toast" id="toast"></div>
 
 <script>
+// ══════ FIREBASE SETUP ══════
+const firebaseConfig = {
+  apiKey: "AIzaSyAOAr6OsQpf_e-xv8qfLyIUu6Dant1MkS4",
+  authDomain: "don-note.firebaseapp.com",
+  projectId: "don-note",
+  storageBucket: "don-note.firebasestorage.app",
+  messagingSenderId: "661381674055",
+  appId: "1:661381674055:web:0427dc17348fb11b56ed62"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+// Generate/get unique user ID (no login needed)
+let userId = localStorage.getItem('dong_uid');
+if (!userId) {
+  userId = 'u' + Math.random().toString(36).substr(2,9) + Date.now().toString(36);
+  localStorage.setItem('dong_uid', userId);
+}
+
+async function saveToCloud() {
+  try {
+    await db.collection('dongNote').doc(userId).set({
+      entries: entries,
+      budgets: budgets,
+      updatedAt: new Date().toISOString()
+    });
+    updateCloudStatus('✅ ซิงค์แล้ว');
+  } catch(e) {
+    updateCloudStatus('⚠️ ออฟไลน์');
+  }
+}
+
+async function loadFromCloud() {
+  try {
+    const doc = await db.collection('dongNote').doc(userId).get();
+    if (doc.exists) {
+      const data = doc.data();
+      if (data.entries) { entries = data.entries; localStorage.setItem('dong_entries', JSON.stringify(entries)); }
+      if (data.budgets) { budgets = data.budgets; localStorage.setItem('dong_budgets', JSON.stringify(budgets)); }
+    } else if (entries.length > 0 || Object.keys(budgets).length > 0) {
+      await saveToCloud(); return;
+    }
+    updateCloudStatus('✅ ซิงค์แล้ว');
+  } catch(e) {
+    updateCloudStatus('⚠️ ออฟไลน์ - ใช้ข้อมูลในเครื่อง');
+  }
+}
+
+function updateCloudStatus(msg) {
+  const el = document.getElementById('cloudStatusSub');
+  if (el) el.textContent = msg;
+}
+
+function copyUserId() {
+  navigator.clipboard?.writeText(userId).then(()=>showToast('📋 คัดลอก User ID แล้ว!')).catch(()=>{});
+}
+
+async function changeUserId() {
+  const newId = prompt('ใส่ User ID จากเครื่องอื่น:');
+  if (!newId || !newId.trim()) return;
+  userId = newId.trim();
+  localStorage.setItem('dong_uid', userId);
+  updateCloudStatus('⏳ กำลังโหลด...');
+  await loadFromCloud();
+  renderAll(); renderBudgetList();
+  document.getElementById('userIdDisplay').textContent = userId.slice(0,16)+'...';
+  showToast('✅ เปลี่ยน User ID แล้ว!');
+}
+
 // ══════ CONSTANTS ══════
 const EXP_CATS = [
   {id:'food',    icon:'🍜', name:'อาหาร'},
@@ -869,12 +954,18 @@ function init(){
   initDong();
   renderPieChart();
   updateSheetSubLabel();
+  // Show user ID in settings
+  const uid = document.getElementById('userIdDisplay');
+  if(uid) uid.textContent = userId.slice(0,16)+'...';
+  updateCloudStatus('⏳ กำลังซิงค์...');
   // chatIn Enter key + iPhone scroll fix
   const ci=document.getElementById('chatIn');
   if(ci){
     ci.addEventListener('keydown',e=>{ if(e.key==='Enter') parseChat(); });
     ci.addEventListener('focus',()=>{ setTimeout(()=>ci.scrollIntoView({behavior:'smooth',block:'center'}),300); });
   }
+  // Load from cloud then re-render
+  loadFromCloud().then(()=>{ renderAll(); renderBudgetList(); });
 }
 
 function todayStr(){ return new Date().toISOString().slice(0,10); }
@@ -1149,6 +1240,7 @@ function saveBudget(){
   if(v>0) budgets[editCatId]=v;
   else delete budgets[editCatId];
   localStorage.setItem('dong_budgets',JSON.stringify(budgets));
+  saveToCloud();
   closeSheet(); renderBudgetList(); renderCatRows();
   showToast('✅ บันทึกงบแล้ว');
 }
@@ -1287,7 +1379,7 @@ function runDong(){
 }
 
 // ══════ HELPERS ══════
-function save(){ localStorage.setItem('dong_entries',JSON.stringify(entries)); }
+function save(){ localStorage.setItem('dong_entries',JSON.stringify(entries)); saveToCloud(); }
 function showToast(msg){
   const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
   setTimeout(()=>t.classList.remove('show'),2500);
