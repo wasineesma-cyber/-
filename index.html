@@ -792,53 +792,7 @@ const LIFF_ID = '2009230946-hp9vcPh3';
 let userId = null;
 let lineProfile = null;
 
-async function initLiff() {
-  try {
-    await liff.init({ liffId: LIFF_ID });
-    if (liff.isLoggedIn()) {
-      lineProfile = await liff.getProfile();
-      userId = lineProfile.userId;
-      document.getElementById('lineLogin').classList.add('hidden');
-      updateLineProfileUI();
-      init();
-    } else {
-      // เปิดนอก LINE app → ใช้ local userId แทน
-      useFallbackUserId();
-    }
-  } catch(e) {
-    console.error('LIFF init error:', e);
-    // LIFF ใช้ไม่ได้ → ใช้ local userId แทน ไม่บังคับ login
-    useFallbackUserId();
-  }
-}
 
-function useFallbackUserId() {
-  let localId = localStorage.getItem('dong_local_uid');
-  if (!localId) {
-    localId = 'local_' + Math.random().toString(36).slice(2, 10);
-    localStorage.setItem('dong_local_uid', localId);
-  }
-  userId = localId;
-  document.getElementById('lineLogin').classList.add('hidden');
-  init();
-}
-
-function updateLineProfileUI() {
-  if (!lineProfile) return;
-  // Header
-  const hb = document.getElementById('headerBear');
-  if (hb && lineProfile.pictureUrl) {
-    hb.innerHTML = `<img src="${lineProfile.pictureUrl}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;">`;
-  }
-  // Settings
-  const nameEl = document.getElementById('lineNameDisplay');
-  if (nameEl) nameEl.textContent = lineProfile.displayName;
-  const picEl = document.getElementById('linePicDisplay');
-  if (picEl && lineProfile.pictureUrl) {
-    picEl.src = lineProfile.pictureUrl;
-    picEl.style.display = 'block';
-  }
-}
 async function initLiff() {
   try {
     // 1. เชื่อมต่อกับระบบ LINE
