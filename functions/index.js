@@ -3,13 +3,11 @@ const admin = require('firebase-admin');
 const line = require('@line/bot-sdk');
 const express = require('express');
 
-// ══════ FIREBASE (auto-init ใน Cloud Functions) ══════
+// ══════ FIREBASE ══════
 admin.initializeApp();
 const db = admin.firestore();
 
 // ══════ LINE CONFIG ══════
-// ตั้งค่าด้วย:
-//   firebase functions:config:set line.token="xxx" line.secret="yyy"
 const lineConfig = {
   channelAccessToken: functions.config().line.token,
   channelSecret: functions.config().line.secret,
@@ -102,6 +100,13 @@ const thisYM = () => {
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
 };
 
+const THAI_MONTHS = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.',
+                     'ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+const thisMonthName = () => {
+  const now = new Date();
+  return `${THAI_MONTHS[now.getMonth()]} ${now.getFullYear() + 543}`;
+};
+
 async function getUserData(userId) {
   const doc = await db.collection('dongNote').doc(userId).get();
   return doc.exists ? doc.data() : { entries: [] };
@@ -116,6 +121,201 @@ async function getMonthlySummary(userId) {
   return { income, expense, balance: income - expense, count: entries.length };
 }
 
+// ══════ QUICK REPLY ══════
+const QUICK_REPLY = {
+  items: [
+    { type: 'action', action: { type: 'message', label: '📊 สรุป', text: 'สรุป' } },
+    { type: 'action', action: { type: 'message', label: '📋 รายการ', text: 'รายการ' } },
+    { type: 'action', action: { type: 'message', label: '🗑️ ลบล่าสุด', text: 'ลบ' } },
+    { type: 'action', action: { type: 'message', label: '❓ วิธีใช้', text: 'ช่วยเหลือ' } },
+  ],
+};
+
+// ══════ FLEX MESSAGES ══════
+function makeSummaryFlex(s) {
+  const balColor = s.balance >= 0 ? '#27ACB2' : '#FF6B6B';
+  return {
+    type: 'flex',
+    altText: `📊 สรุปเดือนนี้: คงเหลือ ${fmt(s.balance)} บาท`,
+    contents: {
+      type: 'bubble',
+      size: 'kilo',
+      header: {
+        type: 'box',
+        layout: 'vertical',
+        backgroundColor: '#27ACB2',
+        paddingAll: '16px',
+        contents: [
+          { type: 'text', text: '📊 สรุปเดือนนี้', weight: 'bold', size: 'lg', color: '#ffffff' },
+          { type: 'text', text: thisMonthName(), size: 'sm', color: '#ffffffcc' },
+        ],
+      },
+      body: {
+        type: 'box',
+        layout: 'vertical',
+        spacing: 'md',
+        paddingAll: '16px',
+        contents: [
+          {
+            type: 'box', layout: 'horizontal',
+            contents: [
+              { type: 'text', text: '💚 รายรับ', flex: 2, size: 'sm', color: '#555555' },
+              { type: 'text', text: `+${fmt(s.income)} บาท`, flex: 1, align: 'end', size: 'sm', color: '#27ACB2', weight: 'bold' },
+            ],
+          },
+          {
+            type: 'box', layout: 'horizontal',
+            contents: [
+              { type: 'text', text: '❤️ รายจ่าย', flex: 2, size: 'sm', color: '#555555' },
+              { type: 'text', text: `-${fmt(s.expense)} บาท`, flex: 1, align: 'end', size: 'sm', color: '#FF6B6B', weight: 'bold' },
+            ],
+          },
+          { type: 'separator' },
+          {
+            type: 'box', layout: 'horizontal',
+            contents: [
+              { type: 'text', text: '💰 คงเหลือ', flex: 2, size: 'md', color: '#111111', weight: 'bold' },
+              { type: 'text', text: `${fmt(s.balance)} บาท`, flex: 1, align: 'end', size: 'md', color: balColor, weight: 'bold' },
+            ],
+          },
+          { type: 'text', text: `${s.count} รายการ`, size: 'xs', color: '#aaaaaa', align: 'end' },
+        ],
+      },
+      footer: {
+        type: 'box',
+        layout: 'horizontal',
+        spacing: 'sm',
+        paddingAll: '12px',
+        contents: [
+          {
+            type: 'button',
+            action: { type: 'message', label: '📋 รายการ', text: 'รายการ' },
+            style: 'secondary', height: 'sm', flex: 1,
+          },
+        ],
+      },
+    },
+    quickReply: QUICK_REPLY,
+  };
+}
+
+function makeEntryFlex(entry, balance) {
+  const isIncome = entry.type === 'income';
+  const headerColor = isIncome ? '#27ACB2' : '#FF6B6B';
+  const sign = isIncome ? '+' : '-';
+  const headerText = isIncome ? '💚 บันทึกรายรับ' : '❤️ บันทึกรายจ่าย';
+  const balColor = balance >= 0 ? '#27ACB2' : '#FF6B6B';
+
+  return {
+    type: 'flex',
+    altText: `${isIncome ? '💚' : '❤️'} บันทึกแล้ว! ${sign}${fmt(entry.amount)} บาท`,
+    contents: {
+      type: 'bubble',
+      size: 'kilo',
+      header: {
+        type: 'box',
+        layout: 'vertical',
+        backgroundColor: headerColor,
+        paddingAll: '12px',
+        contents: [
+          { type: 'text', text: headerText, weight: 'bold', color: '#ffffff', size: 'md' },
+        ],
+      },
+      body: {
+        type: 'box',
+        layout: 'vertical',
+        spacing: 'sm',
+        paddingAll: '16px',
+        contents: [
+          {
+            type: 'box', layout: 'horizontal',
+            contents: [
+              { type: 'text', text: `${entry.catIcon} ${entry.catName}`, flex: 2, size: 'sm', color: '#555555' },
+              { type: 'text', text: `${sign}${fmt(entry.amount)} บาท`, flex: 1, align: 'end', size: 'sm', color: headerColor, weight: 'bold' },
+            ],
+          },
+          { type: 'separator' },
+          {
+            type: 'box', layout: 'horizontal',
+            contents: [
+              { type: 'text', text: '💰 คงเหลือเดือนนี้', flex: 2, size: 'sm', color: '#111111', weight: 'bold' },
+              { type: 'text', text: `${fmt(balance)} บาท`, flex: 1, align: 'end', size: 'sm', color: balColor, weight: 'bold' },
+            ],
+          },
+        ],
+      },
+      footer: {
+        type: 'box',
+        layout: 'horizontal',
+        spacing: 'sm',
+        paddingAll: '12px',
+        contents: [
+          {
+            type: 'button',
+            action: { type: 'message', label: '📊 ดูสรุป', text: 'สรุป' },
+            style: 'secondary', height: 'sm', flex: 1,
+          },
+          {
+            type: 'button',
+            action: { type: 'message', label: '🗑️ ลบ', text: 'ลบ' },
+            style: 'secondary', height: 'sm', flex: 1,
+          },
+        ],
+      },
+    },
+    quickReply: QUICK_REPLY,
+  };
+}
+
+function makeListFlex(entries) {
+  const rows = entries.map(e => ({
+    type: 'box',
+    layout: 'horizontal',
+    contents: [
+      { type: 'text', text: `${e.catIcon} ${e.note || e.catName}`, flex: 2, size: 'sm', color: '#555555', wrap: true },
+      {
+        type: 'text',
+        text: `${e.type === 'income' ? '+' : '-'}${fmt(e.amount)}`,
+        flex: 1, align: 'end', size: 'sm', weight: 'bold',
+        color: e.type === 'income' ? '#27ACB2' : '#FF6B6B',
+      },
+    ],
+  }));
+
+  // แทรก separator ระหว่าง row
+  const contents = [];
+  rows.forEach((r, i) => {
+    contents.push(r);
+    if (i < rows.length - 1) contents.push({ type: 'separator' });
+  });
+
+  return {
+    type: 'flex',
+    altText: '📋 รายการล่าสุด 5 รายการ',
+    contents: {
+      type: 'bubble',
+      size: 'kilo',
+      header: {
+        type: 'box',
+        layout: 'vertical',
+        backgroundColor: '#4A90D9',
+        paddingAll: '12px',
+        contents: [
+          { type: 'text', text: '📋 รายการล่าสุด', weight: 'bold', color: '#ffffff', size: 'md' },
+        ],
+      },
+      body: {
+        type: 'box',
+        layout: 'vertical',
+        spacing: 'sm',
+        paddingAll: '16px',
+        contents,
+      },
+    },
+    quickReply: QUICK_REPLY,
+  };
+}
+
 // ══════ MESSAGE HANDLER ══════
 async function handleMessage(event) {
   const { userId } = event.source;
@@ -123,64 +323,60 @@ async function handleMessage(event) {
   if (!text) return;
 
   const lower = text.toLowerCase();
-  const reply = msg => client.replyMessage(event.replyToken, { type: 'text', text: msg });
+  const reply = msg => client.replyMessage(event.replyToken, msg);
+  const replyText = (str) => reply({ type: 'text', text: str, quickReply: QUICK_REPLY });
 
-  // ── Commands ──
+  // ── สรุป ──
   if (['สรุป','summary','ยอด','balance','ดูยอด'].includes(lower)) {
     const s = await getMonthlySummary(userId);
     if (s.count === 0) {
-      return reply('ยังไม่มีข้อมูลเดือนนี้ 🐼\n\nลองพิมพ์ว่า\n"ข้าว 50" หรือ "เงินเดือน 20000"');
+      return replyText('ยังไม่มีข้อมูลเดือนนี้ 🐼\n\nลองพิมพ์ว่า\n"ข้าว 50" หรือ "เงินเดือน 20000"');
     }
-    return reply(
-      `📊 สรุปเดือนนี้\n\n` +
-      `💚 รายรับ    ${fmt(s.income)} บาท\n` +
-      `❤️ รายจ่าย  ${fmt(s.expense)} บาท\n` +
-      `──────────────\n` +
-      `💰 คงเหลือ  ${fmt(s.balance)} บาท\n` +
-      `📝 ${s.count} รายการ`
-    );
+    return reply(makeSummaryFlex(s));
   }
 
+  // ── รายการ ──
   if (['รายการ','list','ล่าสุด','ดูรายการ'].includes(lower)) {
     const data = await getUserData(userId);
     const last5 = (data.entries || []).slice(-5).reverse();
-    if (!last5.length) return reply('ยังไม่มีรายการ 🐼');
-    const lines = last5.map(e =>
-      `${e.catIcon} ${e.note || e.catName}  ${e.type === 'income' ? '+' : '-'}${fmt(e.amount)}`
-    ).join('\n');
-    return reply(`📋 รายการล่าสุด\n\n${lines}`);
+    if (!last5.length) return replyText('ยังไม่มีรายการ 🐼');
+    return reply(makeListFlex(last5));
   }
 
+  // ── ลบ ──
   if (['ลบ','undo','ยกเลิก','ลบล่าสุด'].includes(lower)) {
     const data = await getUserData(userId);
     const entries = data.entries || [];
-    if (!entries.length) return reply('ไม่มีรายการให้ลบ 🐼');
+    if (!entries.length) return replyText('ไม่มีรายการให้ลบ 🐼');
     const removed = entries.pop();
     await db.collection('dongNote').doc(userId).update({ entries });
-    return reply(`🗑️ ลบแล้ว!\n\n${removed.catIcon} ${removed.note || removed.catName}\n${fmt(removed.amount)} บาท`);
+    return replyText(`🗑️ ลบแล้ว!\n\n${removed.catIcon} ${removed.note || removed.catName}\n${fmt(removed.amount)} บาท`);
   }
 
+  // ── ช่วยเหลือ ──
   if (['ช่วยเหลือ','help','วิธีใช้','เมนู'].includes(lower)) {
-    return reply(
-      `🐼 돈노트 Don Note Bot\n\n` +
-      `📝 บันทึกรายการ:\n` +
-      `• "ข้าวมันไก่ 50"\n` +
-      `• "แท็กซี่ 120"\n` +
-      `• "เงินเดือน 20000"\n` +
-      `• "โบนัส 5000"\n\n` +
-      `📊 คำสั่ง:\n` +
-      `• สรุป → ยอดเดือนนี้\n` +
-      `• รายการ → 5 รายการล่าสุด\n` +
-      `• ลบ → ลบรายการล่าสุด\n` +
-      `• ช่วยเหลือ → เมนูนี้`
-    );
+    return reply({
+      type: 'text',
+      text:
+        `🐼 돈노트 Don Note Bot\n\n` +
+        `📝 บันทึกรายการ:\n` +
+        `• "ข้าวมันไก่ 50"\n` +
+        `• "แท็กซี่ 120"\n` +
+        `• "เงินเดือน 20000"\n` +
+        `• "โบนัส 5000"\n\n` +
+        `📊 คำสั่ง:\n` +
+        `• สรุป → ยอดเดือนนี้\n` +
+        `• รายการ → 5 รายการล่าสุด\n` +
+        `• ลบ → ลบรายการล่าสุด`,
+      quickReply: QUICK_REPLY,
+    });
   }
 
-  // ── Parse entry ──
+  // ── บันทึกรายการ ──
   const entry = parseEntry(text);
   if (!entry) {
-    return reply(
-      `ไม่เข้าใจ 🐼 ลองพิมพ์เช่น\n"ข้าว 50"\n"เงินเดือน 20000"\n\nหรือพิมพ์ "ช่วยเหลือ"`
+    return replyText(
+      `ไม่เข้าใจ 🐼 ลองพิมพ์เช่น\n"ข้าว 50"\n"เงินเดือน 20000"\n\nหรือกด ❓ วิธีใช้`
     );
   }
 
@@ -201,15 +397,7 @@ async function handleMessage(event) {
   );
 
   const s = await getMonthlySummary(userId);
-  const sign = entry.type === 'income' ? '+' : '-';
-  const emoji = entry.type === 'income' ? '💚' : '❤️';
-
-  return reply(
-    `${emoji} บันทึกแล้ว!\n\n` +
-    `${entry.catIcon} ${entry.catName}\n` +
-    `${sign} ${fmt(entry.amount)} บาท\n\n` +
-    `💰 คงเหลือเดือนนี้: ${fmt(s.balance)} บาท`
-  );
+  return reply(makeEntryFlex(entry, s.balance));
 }
 
 // ══════ FIREBASE CLOUD FUNCTION ══════
@@ -223,5 +411,5 @@ app.post('/', line.middleware(lineConfig), (req, res) => {
 });
 
 exports.webhook = functions
-  .region('asia-east1')   // Tokyo - ใกล้ไทยที่สุด
+  .region('asia-east1')
   .https.onRequest(app);
