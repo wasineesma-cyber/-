@@ -316,89 +316,18 @@ function makeListFlex(entries) {
   };
 }
 
-// ══════ MESSAGE HANDLER ══════
-async function handleMessage(event) {
-  const { userId } = event.source;
-  const text = event.message?.text?.trim();
-  if (!text) return;
-
-  const lower = text.toLowerCase();
-  const reply = msg => client.replyMessage(event.replyToken, msg);
-  const replyText = (str) => reply({ type: 'text', text: str, quickReply: QUICK_REPLY });
-
-  // ── สรุป ──
-  if (['สรุป','summary','ยอด','balance','ดูยอด'].includes(lower)) {
-    const s = await getMonthlySummary(userId);
-    if (s.count === 0) {
-      return replyText('ยังไม่มีข้อมูลเดือนนี้ 🐼\n\nลองพิมพ์ว่า\n"ข้าว 50" หรือ "เงินเดือน 20000"');
-    }
-    return reply(makeSummaryFlex(s));
-  }
-
-  // ── รายการ ──
-  if (['รายการ','list','ล่าสุด','ดูรายการ'].includes(lower)) {
-    const data = await getUserData(userId);
-    const last5 = (data.entries || []).slice(-5).reverse();
-    if (!last5.length) return replyText('ยังไม่มีรายการ 🐼');
-    return reply(makeListFlex(last5));
-  }
-
-  // ── ลบ ──
-  if (['ลบ','undo','ยกเลิก','ลบล่าสุด'].includes(lower)) {
-    const data = await getUserData(userId);
-    const entries = data.entries || [];
-    if (!entries.length) return replyText('ไม่มีรายการให้ลบ 🐼');
-    const removed = entries.pop();
-    await db.collection('dongNote').doc(userId).update({ entries });
-    return replyText(`🗑️ ลบแล้ว!\n\n${removed.catIcon} ${removed.note || removed.catName}\n${fmt(removed.amount)} บาท`);
-  }
-
-  // ── ช่วยเหลือ ──
-  if (['ช่วยเหลือ','help','วิธีใช้','เมนู'].includes(lower)) {
-    return reply({
-      type: 'text',
-      text:
-        `🐼 돈노트 Don Note Bot\n\n` +
-        `📝 บันทึกรายการ:\n` +
-        `• "ข้าวมันไก่ 50"\n` +
-        `• "แท็กซี่ 120"\n` +
-        `• "เงินเดือน 20000"\n` +
-        `• "โบนัส 5000"\n\n` +
-        `📊 คำสั่ง:\n` +
-        `• สรุป → ยอดเดือนนี้\n` +
-        `• รายการ → 5 รายการล่าสุด\n` +
-        `• ลบ → ลบรายการล่าสุด`,
-      quickReply: QUICK_REPLY,
-    });
-  }
-
-  // ── บันทึกรายการ ──
-  const entry = parseEntry(text);
-  if (!entry) {
-    return replyText(
-      `ไม่เข้าใจ 🐼 ลองพิมพ์เช่น\n"ข้าว 50"\n"เงินเดือน 20000"\n\nหรือกด ❓ วิธีใช้`
-    );
-  }
-
-  const newEntry = {
-    id: Date.now(),
-    type: entry.type,
-    amount: entry.amount,
-    catId: entry.catId,
-    catIcon: entry.catIcon,
-    catName: entry.catName,
-    note: text,
-    date: todayStr(),
-  };
-
-  await db.collection('dongNote').doc(userId).set(
-    { entries: admin.firestore.FieldValue.arrayUnion(newEntry) },
-    { merge: true }
-  );
-
-  const s = await getMonthlySummary(userId);
-  return reply(makeEntryFlex(entry, s.balance));
-}
+// ══════ MESSAGE HANDLER (ปิดไว้ก่อน - ใช้กับ LINE) ══════
+// async function handleMessage(event) {
+//   const { userId } = event.source;
+//   const text = event.message?.text?.trim();
+//   if (!text) return;
+//
+//   const lower = text.toLowerCase();
+//   const reply = msg => client.replyMessage(event.replyToken, msg);
+//   const replyText = (str) => reply({ type: 'text', text: str, quickReply: QUICK_REPLY });
+//
+//   // ... (LINE reply logic)
+// }
 
 // ══════ FIREBASE CLOUD FUNCTION ══════
 const app = express();
