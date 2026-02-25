@@ -11,6 +11,7 @@
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 <title>돈노트 Don Note ⭐</title>
@@ -466,9 +467,40 @@ body{padding-bottom:var(--nav-h);}
 .ib-text span{font-size:.75rem;color:var(--sub);}
 .ib-btn{background:var(--pink);color:#fff;border:none;border-radius:10px;padding:8px 14px;font-size:.82rem;font-weight:700;cursor:pointer;white-space:nowrap;}
 .ib-close{background:none;border:none;color:var(--sub);font-size:1.2rem;cursor:pointer;padding:4px;flex-shrink:0;}
+
+/* ── LINE LOGIN SCREEN ── */
+#lineLogin{
+  position:fixed;inset:0;z-index:10000;
+  background:var(--bg);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:32px;
+}
+#lineLogin.hidden{display:none;}
+.ll-bear{font-size:5rem;margin-bottom:12px;}
+.ll-title{font-size:1.4rem;font-weight:900;color:var(--pink);margin-bottom:6px;}
+.ll-sub{font-size:.85rem;color:var(--sub);margin-bottom:32px;line-height:1.6;}
+.btn-line-login{
+  background:#06C755;color:#fff;border:none;
+  padding:16px 36px;border-radius:16px;
+  font-size:1rem;font-weight:800;cursor:pointer;
+  display:flex;align-items:center;gap:10px;
+  box-shadow:0 4px 20px rgba(6,199,85,.35);
+}
+.btn-line-login img{width:24px;height:24px;}
 </style>
 </head>
 <body>
+
+<!-- LINE LOGIN SCREEN -->
+<div id="lineLogin" class="hidden">
+  <div class="ll-bear">🐼</div>
+  <div class="ll-title">돈노트 Don Note ⭐</div>
+  <div class="ll-sub">เข้าสู่ระบบด้วย LINE<br>ข้อมูลปลอดภัยผูกกับบัญชี LINE ของคุณ</div>
+  <button class="btn-line-login" onclick="liff.login()">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/2/2e/LINE_New_App_Icon_%282020-12%29.png" alt="LINE">
+    เข้าสู่ระบบด้วย LINE
+  </button>
+</div>
 
 <!-- SPLASH SCREEN -->
 <div id="splash">
@@ -637,8 +669,9 @@ body{padding-bottom:var(--nav-h);}
 <!-- ════════ PANEL: ตั้งค่า ════════ -->
 <div class="panel" id="panel-settings">
   <div style="text-align:center;padding:20px 0 16px;">
+    <img id="linePicDisplay" src="" alt="" style="display:none;width:72px;height:72px;border-radius:50%;object-fit:cover;margin-bottom:10px;border:3px solid var(--pink);">
     <div id="settingsBear" style="font-size:3.5rem;cursor:pointer;" onclick="runDong()">🐼</div>
-    <div style="font-size:1rem;font-weight:700;margin-top:6px;">돈노트 Don Note ⭐</div>
+    <div style="font-size:1rem;font-weight:700;margin-top:6px;" id="lineNameDisplay">돈노트 Don Note ⭐</div>
     <div style="font-size:.75rem;color:var(--sub);margin-top:2px;">v2.0 · โน้ตเงินสไตล์เกาหลี</div>
   </div>
   <div class="settings-card">
@@ -646,12 +679,8 @@ body{padding-bottom:var(--nav-h);}
     <div class="si2">
       <div class="si2-left"><div class="si2-label">☁️ สถานะ Firebase</div><div class="si2-sub" id="cloudStatusSub">⏳ กำลังเชื่อมต่อ...</div></div>
     </div>
-    <div class="si2" onclick="copyUserId()">
-      <div class="si2-left"><div class="si2-label">🔑 User ID ของคุณ</div><div class="si2-sub" id="userIdDisplay">-</div></div>
-      <div class="si2-right">📋</div>
-    </div>
-    <div class="si2" onclick="changeUserId()">
-      <div class="si2-left"><div class="si2-label">🔄 ซิงค์จากเครื่องอื่น</div><div class="si2-sub">ใส่ User ID เครื่องเก่าเพื่อดึงข้อมูล</div></div>
+    <div class="si2" onclick="lineLogout()" style="cursor:pointer;">
+      <div class="si2-left"><div class="si2-label" style="color:#06C755;">🟢 LINE Account</div><div class="si2-sub">แตะเพื่อออกจากระบบ</div></div>
       <div class="si2-right">›</div>
     </div>
   </div>
@@ -758,11 +787,51 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
-// Generate/get unique user ID (no login needed)
-let userId = localStorage.getItem('dong_uid');
-if (!userId) {
-  userId = 'u' + Math.random().toString(36).substr(2,9) + Date.now().toString(36);
-  localStorage.setItem('dong_uid', userId);
+// ══════ LIFF + LINE LOGIN ══════
+const LIFF_ID = '2009225343-VWodtDEA';
+let userId = null;
+let lineProfile = null;
+
+async function initLiff() {
+  try {
+    await liff.init({ liffId: LIFF_ID });
+    if (liff.isLoggedIn()) {
+      lineProfile = await liff.getProfile();
+      userId = lineProfile.userId;
+      document.getElementById('lineLogin').classList.add('hidden');
+      updateLineProfileUI();
+      init();
+    } else {
+      document.getElementById('lineLogin').classList.remove('hidden');
+    }
+  } catch(e) {
+    console.error('LIFF init error:', e);
+    // Fallback: ถ้า LIFF ใช้ไม่ได้ (เช่น เปิดนอก LINE) ให้โชว์ปุ่ม login
+    document.getElementById('lineLogin').classList.remove('hidden');
+  }
+}
+
+function updateLineProfileUI() {
+  if (!lineProfile) return;
+  // Header
+  const hb = document.getElementById('headerBear');
+  if (hb && lineProfile.pictureUrl) {
+    hb.innerHTML = `<img src="${lineProfile.pictureUrl}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;">`;
+  }
+  // Settings
+  const nameEl = document.getElementById('lineNameDisplay');
+  if (nameEl) nameEl.textContent = lineProfile.displayName;
+  const picEl = document.getElementById('linePicDisplay');
+  if (picEl && lineProfile.pictureUrl) {
+    picEl.src = lineProfile.pictureUrl;
+    picEl.style.display = 'block';
+  }
+}
+
+async function lineLogout() {
+  if (!confirm('ออกจากระบบ LINE? ข้อมูลยังอยู่ใน Firebase ปลอดภัย 🐼')) return;
+  liff.logout();
+  location.reload();
 }
 
 async function saveToCloud() {
@@ -797,22 +866,6 @@ async function loadFromCloud() {
 function updateCloudStatus(msg) {
   const el = document.getElementById('cloudStatusSub');
   if (el) el.textContent = msg;
-}
-
-function copyUserId() {
-  navigator.clipboard?.writeText(userId).then(()=>showToast('📋 คัดลอก User ID แล้ว!')).catch(()=>{});
-}
-
-async function changeUserId() {
-  const newId = prompt('ใส่ User ID จากเครื่องอื่น:');
-  if (!newId || !newId.trim()) return;
-  userId = newId.trim();
-  localStorage.setItem('dong_uid', userId);
-  updateCloudStatus('⏳ กำลังโหลด...');
-  await loadFromCloud();
-  renderAll(); renderBudgetList();
-  document.getElementById('userIdDisplay').textContent = userId.slice(0,16)+'...';
-  showToast('✅ เปลี่ยน User ID แล้ว!');
 }
 
 // ══════ CONSTANTS ══════
@@ -924,9 +977,7 @@ function init(){
   initDong();
   renderPieChart();
   updateSheetSubLabel();
-  // Show user ID in settings
-  const uid = document.getElementById('userIdDisplay');
-  if(uid) uid.textContent = userId.slice(0,16)+'...';
+  updateLineProfileUI();
   updateCloudStatus('⏳ กำลังซิงค์...');
   // chatIn Enter key + iPhone scroll fix
   const ci=document.getElementById('chatIn');
@@ -1337,7 +1388,7 @@ function showToast(msg){
   setTimeout(()=>t.classList.remove('show'),2500);
 }
 
-init();
+initLiff();
 
 // ══════ SPLASH ══════
 window.addEventListener('load', () => {
