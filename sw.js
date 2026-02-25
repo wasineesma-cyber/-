@@ -1,5 +1,5 @@
 const CACHE = 'donnote-v1';
-const ASSETS = ['./', './index.html', './icon-192.png', './icon-512.png', './apple-touch-icon.png'];
+const ASSETS = ['./icon-192.png', './icon-512.png', './apple-touch-icon.png', './manifest.json'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)));
@@ -14,7 +14,20 @@ self.addEventListener('activate', e => {
 });
 
 self.addEventListener('fetch', e => {
-  e.respondWith(
-    caches.match(e.request).then(r => r || fetch(e.request).catch(() => caches.match('./index.html')))
-  );
+  const url = new URL(e.request.url);
+  const isHTML = e.request.headers.get('accept')?.includes('text/html') || url.pathname.endsWith('.html') || url.pathname === '/';
+
+  if (isHTML) {
+    // Network-first for HTML: always get latest, fallback to cache if offline
+    e.respondWith(
+      fetch(e.request)
+        .then(r => { caches.open(CACHE).then(c => c.put(e.request, r.clone())); return r; })
+        .catch(() => caches.match(e.request))
+    );
+  } else {
+    // Cache-first for icons/assets
+    e.respondWith(
+      caches.match(e.request).then(r => r || fetch(e.request).catch(() => {}))
+    );
+  }
 });
