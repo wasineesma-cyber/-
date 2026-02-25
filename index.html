@@ -839,12 +839,57 @@ function updateLineProfileUI() {
     picEl.style.display = 'block';
   }
 }
+async function initLiff() {
+  try {
+    // 1. เชื่อมต่อกับระบบ LINE
+    await liff.init({ liffId: LIFF_ID });
 
-async function lineLogout() {
-  if (!confirm('ออกจากระบบ LINE? ข้อมูลยังอยู่ใน Firebase ปลอดภัย 🐼')) return;
-  liff.logout();
-  location.reload();
+    if (liff.isLoggedIn()) {
+      // 2. ถ้าเข้าสู่ระบบแล้ว -> ดึงข้อมูลส่วนตัว
+      lineProfile = await liff.getProfile();
+      userId = lineProfile.userId; 
+
+      // 3. จัดการหน้าจอ UI
+      document.getElementById('lineLogin').classList.add('hidden');
+      updateLineProfileUI();
+      
+      // 4. เริ่มดึงข้อมูลเงินจาก Firebase (โดยใช้ userId จาก LINE)
+      init(); 
+    } else {
+      // 5. ถ้ายังไม่เข้าสู่ระบบ -> แสดงหน้าปุ่ม Login
+      document.getElementById('lineLogin').classList.remove('hidden');
+      // ปิด Splash Screen เพื่อให้กดปุ่มได้
+      const sp = document.getElementById('splash');
+      if (sp) sp.classList.add('hide');
+    }
+  } catch (e) {
+    console.error('LIFF Error:', e);
+    // หากเปิดผ่าน Browser ทั่วไป ให้ใช้ระบบ ID สำรอง (Local)
+    useFallbackUserId();
+  }
 }
+
+// ฟังก์ชันอัปเดตชื่อและรูปโปรไฟล์ในแอป
+function updateLineProfileUI() {
+  if (!lineProfile) return;
+  
+  // ใส่รูปโปรไฟล์ที่ Header
+  const hb = document.getElementById('headerBear');
+  if (hb && lineProfile.pictureUrl) {
+    hb.innerHTML = `<img src="${lineProfile.pictureUrl}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;border:1.5px solid #FF4785;">`;
+  }
+  
+  // ใส่รูปและชื่อที่หน้าตั้งค่า (Settings)
+  const nameEl = document.getElementById('lineNameDisplay');
+  const picEl = document.getElementById('linePicDisplay');
+  if (nameEl) nameEl.textContent = lineProfile.displayName;
+  if (picEl && lineProfile.pictureUrl) {
+    picEl.src = lineProfile.pictureUrl;
+    picEl.style.display = 'block';
+  }
+}
+
+
 
 async function saveToCloud() {
   try {
