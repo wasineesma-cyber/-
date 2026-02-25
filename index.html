@@ -602,6 +602,51 @@ body{padding-bottom:var(--nav-h);}
   <div class="budget-list" id="budgetList"></div>
 </div>
 
+// ฟังก์ชันสำหรับบันทึกการตั้งค่ารอบบัญชีลง Firebase
+async function saveCycleSettings() {
+  const cycleType = document.getElementById('cycleType').value;
+  
+  if (!userId) {
+    showToast("กรุณา Login ก่อนตั้งค่าค่ะ 🐼");
+    return;
+  }
+
+  try {
+    // บันทึกลง Firestore ใน Document ของผู้ใช้ (ใช้ merge เพื่อไม่ให้ข้อมูลอื่นหาย)
+    await db.collection('dongNote').doc(userId).set({
+      settings: {
+        cycle: cycleType,
+        updatedAt: new Date().toISOString()
+      }
+    }, { merge: true });
+
+    showToast("✅ เปลี่ยนเป็น " + (cycleType === 'monthly' ? 'รายเดือน' : 'รายสัปดาห์') + " แล้วค่ะ");
+    
+    // หลังจากบันทึกเสร็จ ให้รีเฟรชหน้าสรุปผลใหม่ตามรอบที่เลือก
+    renderAll(); 
+  } catch (error) {
+    console.error("Error saving settings:", error);
+    showToast("❌ บันทึกไม่สำเร็จ ลองอีกครั้งนะคะ");
+  }
+}
+
+// เพิ่มเติม: ให้ดึงค่าที่เคยตั้งไว้มาแสดงเมื่อเปิดแอป
+async function loadSettings() {
+  try {
+    const doc = await db.collection('dongNote').doc(userId).get();
+    if (doc.exists && doc.data().settings) {
+      const settings = doc.data().settings;
+      if (settings.cycle) {
+        document.getElementById('cycleType').value = settings.cycle;
+      }
+    }
+  } catch (e) {
+    console.log("No settings found");
+  }
+}
+
+// อย่าลืมเรียกใช้ loadSettings() ในฟังก์ชัน init() เดิมของคุณด้วยนะคะ
+// (หาบรรทัดที่เขียนว่า function init() { ... } แล้วเพิ่ม loadSettings(); เข้าไปข้างในค่ะ)
 
 </div>
 
