@@ -1,9 +1,7 @@
+
 export default async function handler(req, res) {
-  if (req.method !== 'POST') {
-    return res.status(200).send('OK');
-  }
+  if (req.method !== "POST") return res.status(405).send("Method Not Allowed");
 
-  console.log('Webhook received');
-
-  return res.status(200).json({ status: 'ok' });
+  // แค่ตอบ 200 เพื่อให้ LINE Verify ผ่านก่อน
+  return res.status(200).send("OK");
 }
