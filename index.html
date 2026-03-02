@@ -821,6 +821,11 @@ let lineProfile = null;
 let hasLinePic = false;
 
 async function initLiff() {
+  // ถ้าไม่ได้อยู่ใน LINE browser → ข้าม LIFF ใช้ local userId แทน (ไม่ redirect)
+  if (!/Line\//i.test(navigator.userAgent)) {
+    useFallbackUserId();
+    return;
+  }
   try {
     await liff.init({ liffId: LIFF_ID });
     // เปิดใน LINE app → ซ่อน splash ทันที ไม่ต้องรอ 1400ms
@@ -836,17 +841,13 @@ async function initLiff() {
       init();
       return;
     }
-
-    // ถ้าอยู่ใน LIFF แต่ยังไม่ login → โชว์หน้าล็อกอิน
+    // อยู่ใน LINE แต่ยังไม่ login → โชว์ปุ่ม login
     const ll = document.getElementById('lineLogin');
     if (ll) ll.classList.remove('hidden');
-
-    // ปิด Splash เพื่อให้กดได้
     const sp = document.getElementById('splash');
     if (sp) sp.classList.add('hide');
-
   } catch (e) {
-    // เปิดผ่าน browser ทั่วไป / LIFF ใช้ไม่ได้ → ใช้ local userId
+    // LIFF ใช้ไม่ได้ → ใช้ local userId แทน ไม่บังคับ login
     console.error('LIFF Error:', e);
     useFallbackUserId();
   }
