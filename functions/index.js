@@ -246,19 +246,37 @@ function makeEntryFlex(entry, balance) {
       },
       footer: {
         type: 'box',
-        layout: 'horizontal',
+        layout: 'vertical',
         spacing: 'sm',
         paddingAll: '12px',
         contents: [
           {
             type: 'button',
-            action: { type: 'message', label: '📊 ดูสรุป', text: 'สรุป' },
-            style: 'secondary', height: 'sm', flex: 1,
+            action: {
+              type: 'uri',
+              label: '✏️ จดเพิ่มเอง (ละเอียด)',
+              uri: 'https://liff.line.me/2009230946-hp9vcPh3?panel=add',
+            },
+            style: 'primary',
+            color: '#FF4785',
+            height: 'sm',
           },
           {
-            type: 'button',
-            action: { type: 'message', label: '🗑️ ลบ', text: 'ลบ' },
-            style: 'secondary', height: 'sm', flex: 1,
+            type: 'box',
+            layout: 'horizontal',
+            spacing: 'sm',
+            contents: [
+              {
+                type: 'button',
+                action: { type: 'message', label: '📊 ดูสรุป', text: 'สรุป' },
+                style: 'secondary', height: 'sm', flex: 1,
+              },
+              {
+                type: 'button',
+                action: { type: 'message', label: '🗑️ ลบ', text: 'ลบ' },
+                style: 'secondary', height: 'sm', flex: 1,
+              },
+            ],
           },
         ],
       },

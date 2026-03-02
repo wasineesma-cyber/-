@@ -752,6 +752,22 @@ function doGet(){return ContentService.createTextOutput(JSON.stringify({status:'
   </div>
 </div>
 
+<!-- Edit Entry sheet -->
+<div class="overlay hidden" id="editEntrySheet">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title" id="editSheetTitle">แก้ไขรายการ</div>
+    <div class="form-label">หมวดหมู่</div>
+    <div class="cat-grid2" id="editCatGrid"></div>
+    <div class="form-label" style="margin-top:10px;">หมายเหตุ</div>
+    <input class="sheet-input" id="editNoteInput" placeholder="รายละเอียด..." autocomplete="off">
+    <div class="sheet-btns">
+      <button class="btn-sheet-cancel" onclick="closeEditSheet()">ยกเลิก</button>
+      <button class="btn-sheet-save" id="btnEditSave" onclick="saveEditEntry()">บันทึก ✓</button>
+    </div>
+  </div>
+</div>
+
 <!-- Budget sheet -->
 <div class="overlay hidden" id="budgetSheet">
   <div class="sheet">
@@ -1014,6 +1030,12 @@ function init(){
   }
 
   loadFromCloud().then(()=>{ renderAll(); renderBudgetList(); });
+
+  // Deep link: ?panel=add หรือ ?panel=history ฯลฯ
+  const deepPanel = new URLSearchParams(window.location.search).get('panel');
+  if(deepPanel && document.getElementById('panel-'+deepPanel)){
+    goPanel('panel-'+deepPanel);
+  }
 }
 
 function todayStr(){ return new Date().toISOString().slice(0,10); }
@@ -1279,13 +1301,48 @@ function renderHistory(){
         <div class="tx2-meta">${e.catName} · ${fmtDate(e.date)}</div>
       </div>
       <div class="tx2-amt">${e.type==='income'?'+':'-'}฿${fmt0(e.amount)}</div>
-      <button class="tx2-del" onclick="delEntry(${e.id})">🗑️</button>
+      <button class="tx2-del" onclick="openEditSheet(${e.id})" title="แก้ไข">✏️</button>
+      <button class="tx2-del" onclick="delEntry(${e.id})" title="ลบ">🗑️</button>
     </div>`).join('');
 }
 function delEntry(id){
   entries=entries.filter(e=>e.id!==id);
   save(); renderAll(); renderHistory();
   showToast('🗑️ ลบแล้ว');
+}
+
+// ══════ EDIT ENTRY ══════
+let _editId=null, _editType=null, _editCatId=null;
+
+function openEditSheet(id){
+  const e=entries.find(x=>x.id==id);
+  if(!e) return;
+  _editId=id; _editType=e.type; _editCatId=e.catId;
+  document.getElementById('editSheetTitle').textContent='แก้ไข: '+e.catIcon+' '+e.catName;
+  document.getElementById('editNoteInput').value=e.note||'';
+  document.getElementById('btnEditSave').className='btn-sheet-save '+(_editType==='income'?'inc-save':'');
+  renderEditCatGrid();
+  document.getElementById('editEntrySheet').classList.remove('hidden');
+}
+function renderEditCatGrid(){
+  const cats=_editType==='expense'?EXP_CATS:INC_CATS;
+  const selCls=_editType==='expense'?'exp-sel':'inc-sel';
+  document.getElementById('editCatGrid').innerHTML=cats.map(c=>`
+    <div class="cat-chip2 ${_editCatId===c.id?'sel '+selCls:''}" onclick="_editCatId='${c.id}';renderEditCatGrid();">
+      <div class="cc2-icon">${c.icon}</div>
+      <div class="cc2-name">${c.name}</div>
+    </div>`).join('');
+}
+function closeEditSheet(){ document.getElementById('editEntrySheet').classList.add('hidden'); }
+function saveEditEntry(){
+  const idx=entries.findIndex(x=>x.id==_editId);
+  if(idx===-1) return;
+  const allCats=[...EXP_CATS,...INC_CATS];
+  const cat=allCats.find(c=>c.id===_editCatId)||allCats[0];
+  const note=document.getElementById('editNoteInput').value.trim();
+  entries[idx]={...entries[idx],catId:cat.id,catIcon:cat.icon,catName:cat.name,note:note||cat.name};
+  save(); renderAll(); renderHistory(); closeEditSheet();
+  showToast('✅ แก้ไขแล้ว');
 }
 
 // ══════ SETTINGS ══════
