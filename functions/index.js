@@ -2,6 +2,7 @@ const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 const line = require('@line/bot-sdk');
 const express = require('express');
+const Anthropic = require('@anthropic-ai/sdk');
 
 // ══════ FIREBASE ══════
 admin.initializeApp();
@@ -334,6 +335,69 @@ function makeListFlex(entries) {
   };
 }
 
+// ══════ RECEIPT OCR ══════
+function streamToBuffer(stream) {
+  return new Promise((resolve, reject) => {
+    const chunks = [];
+    stream.on('data', c => chunks.push(Buffer.from(c)));
+    stream.on('end', () => resolve(Buffer.concat(chunks)));
+    stream.on('error', reject);
+  });
+}
+
+async function analyzeReceiptImage(base64, mimeType = 'image/jpeg') {
+  const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+  const resp = await anthropic.messages.create({
+    model: 'claude-haiku-4-5-20251001',
+    max_tokens: 256,
+    messages: [{
+      role: 'user',
+      content: [
+        { type: 'image', source: { type: 'base64', media_type: mimeType, data: base64 } },
+        { type: 'text', text: 'อ่านใบเสร็จหรือบิลนี้ ตอบเฉพาะ JSON รูปแบบนี้เท่านั้น ไม่ต้องอธิบาย:\n{"amount":<ตัวเลขยอดรวม>,"note":"<ชื่อร้านหรือรายการหลัก>"}' },
+      ],
+    }],
+  });
+  const text = resp.content[0].text;
+  const match = text.match(/\{[\s\S]*?\}/);
+  if (!match) throw new Error('no JSON in response');
+  return JSON.parse(match[0]);
+}
+
+async function handleImageMessage(event) {
+  const { userId } = event.source;
+  const reply = msg => client.replyMessage(event.replyToken, msg);
+  try {
+    const stream = await client.getMessageContent(event.message.id);
+    const buffer = await streamToBuffer(stream);
+    const base64 = buffer.toString('base64');
+
+    const { amount, note } = await analyzeReceiptImage(base64);
+    if (!amount || amount <= 0) throw new Error('no amount');
+
+    const entry = parseEntry(`${note} ${amount}`) || {
+      type: 'expense', catId: 'exp_other', catName: 'อื่นๆ', catIcon: '📦', amount,
+    };
+    entry.note = note;
+    entry.date = todayStr();
+    entry.id = Date.now().toString();
+
+    const data = await getUserData(userId);
+    const entries = [...(data.entries || []), entry];
+    await db.collection('dongNote').doc(userId).set({ ...data, entries, updatedAt: new Date().toISOString() });
+
+    const s = await getMonthlySummary(userId);
+    return reply(makeEntryFlex(entry, s.income - s.expense));
+  } catch (e) {
+    console.error('Image OCR error:', e);
+    return reply({
+      type: 'text',
+      text: '🐼 อ่านบิลไม่สำเร็จ ลองส่งรูปที่ชัดขึ้น หรือพิมพ์ตรงๆ เช่น "กาแฟ 55" ได้เลยนะ',
+      quickReply: QUICK_REPLY,
+    });
+  }
+}
+
 // ══════ MESSAGE HANDLER ══════
 async function handleMessage(event) {
   const { userId } = event.source;
@@ -402,11 +466,37 @@ const app = express();
 
 app.post('/', line.middleware(lineConfig), (req, res) => {
   res.sendStatus(200);
-  (req.body.events || [])
-    .filter(e => e.type === 'message' && e.message?.type === 'text')
-    .forEach(e => handleMessage(e).catch(console.error));
+  (req.body.events || []).forEach(e => {
+    if (e.type === 'message' && e.message?.type === 'text')  handleMessage(e).catch(console.error);
+    if (e.type === 'message' && e.message?.type === 'image') handleImageMessage(e).catch(console.error);
+  });
 });
 
 exports.webhook = functions
   .region('asia-east1')
   .https.onRequest(app);
+
+// ══════ ANALYZE RECEIPT (สำหรับ LIFF app) ══════
+const receiptApp = express();
+receiptApp.use(express.json({ limit: '8mb' }));
+receiptApp.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Headers', 'Content-Type');
+  if (req.method === 'OPTIONS') return res.sendStatus(200);
+  next();
+});
+receiptApp.post('/', async (req, res) => {
+  const { imageBase64, mimeType } = req.body;
+  if (!imageBase64) return res.status(400).json({ error: 'No image' });
+  try {
+    const result = await analyzeReceiptImage(imageBase64, mimeType || 'image/jpeg');
+    res.json(result);
+  } catch (e) {
+    console.error('LIFF receipt error:', e);
+    res.status(500).json({ error: 'วิเคราะห์ไม่สำเร็จ' });
+  }
+});
+
+exports.analyzeReceipt = functions
+  .region('asia-east1')
+  .https.onRequest(receiptApp);

@@ -249,6 +249,17 @@ body{padding-bottom:var(--nav-h);}
 .btn-add.inc-btn{background:var(--teal);box-shadow:0 4px 14px rgba(0,201,167,.3);}
 .btn-add:active{transform:scale(.98);}
 
+/* Camera OCR button */
+.btn-camera{
+  width:100%;padding:11px;border:2px dashed var(--border);border-radius:12px;
+  background:var(--white);font-size:.88rem;font-weight:600;color:var(--sub);
+  cursor:pointer;text-align:center;margin-bottom:12px;display:block;
+  transition:all .2s;
+}
+.btn-camera:active,.btn-camera.scanning{border-color:var(--pink);color:var(--pink);background:var(--pink-light);}
+@keyframes spin{to{transform:rotate(360deg)}}
+.ic-spin{display:inline-block;animation:spin .8s linear infinite;}
+
 /* ── หมวด/งบ PANEL ── */
 .budget-header{font-size:1.1rem;font-weight:800;text-align:center;margin-bottom:14px;}
 .period-setting-card{
@@ -615,6 +626,11 @@ body{padding-bottom:var(--nav-h);}
 
   <div class="form-label">หมวดหมู่</div>
   <div class="cat-grid2" id="catGrid2"></div>
+
+  <button class="btn-camera" id="btnCamera" type="button" onclick="document.getElementById('receiptInput').click()">
+    📷 ถ่ายรูป / สแกนใบเสร็จ
+  </button>
+  <input type="file" id="receiptInput" accept="image/*" style="display:none" onchange="handleReceiptInput(this)">
 
   <input class="note-field" id="noteField" placeholder="รายละเอียด (ไม่บังคับ)">
 
@@ -1343,6 +1359,47 @@ function saveEditEntry(){
   entries[idx]={...entries[idx],catId:cat.id,catIcon:cat.icon,catName:cat.name,note:note||cat.name};
   save(); renderAll(); renderHistory(); closeEditSheet();
   showToast('✅ แก้ไขแล้ว');
+}
+
+// ══════ RECEIPT OCR ══════
+const RECEIPT_API = 'https://asia-east1-don-note.cloudfunctions.net/analyzeReceipt';
+
+async function handleReceiptInput(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const btn = document.getElementById('btnCamera');
+  btn.innerHTML = '<span class="ic-spin">⏳</span> กำลังอ่านบิล...';
+  btn.classList.add('scanning');
+  const reader = new FileReader();
+  reader.onload = async function(ev) {
+    const base64 = ev.target.result.split(',')[1];
+    try {
+      const res = await fetch(RECEIPT_API, {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ imageBase64: base64, mimeType: file.type || 'image/jpeg' }),
+      });
+      const data = await res.json();
+      if (data.amount) {
+        document.getElementById('inputAmt').value = data.amount;
+        if (data.note) {
+          document.getElementById('noteField').value = data.note;
+          const g = guessCategory(data.note.toLowerCase());
+          if (g.catId !== 'other') { selCatId = g.catId; renderCatGrid2(); }
+          if (g.type === 'income') setAddType('income');
+        }
+        showToast('✅ อ่านบิลสำเร็จ! ตรวจสอบก่อนกดบันทึก');
+      } else {
+        showToast('❓ อ่านไม่ชัด ลองพิมพ์เองได้เลย');
+      }
+    } catch(e) {
+      showToast('❌ อ่านบิลไม่สำเร็จ ลองใหม่');
+    }
+    btn.innerHTML = '📷 ถ่ายรูป / สแกนใบเสร็จ';
+    btn.classList.remove('scanning');
+    input.value = '';
+  };
+  reader.readAsDataURL(file);
 }
 
 // ══════ SETTINGS ══════
