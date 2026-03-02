@@ -791,7 +791,11 @@ let hasLinePic = false;
 async function initLiff() {
   try {
     await liff.init({ liffId: LIFF_ID });
-
+    // เปิดใน LINE app → ซ่อน splash ทันที ไม่ต้องรอ 1400ms
+    if (liff.isInClient()) {
+      const sp = document.getElementById('splash');
+      if (sp) sp.remove();
+    }
     if (liff.isLoggedIn()) {
       lineProfile = await liff.getProfile();
       userId = lineProfile.userId;

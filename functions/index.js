@@ -1,18 +1,18 @@
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
-// const line = require('@line/bot-sdk'); // ปิดไว้ก่อน
+const line = require('@line/bot-sdk');
 const express = require('express');
 
 // ══════ FIREBASE ══════
 admin.initializeApp();
 const db = admin.firestore();
 
-// ══════ LINE CONFIG (ปิดไว้ก่อน) ══════
-// const lineConfig = {
-//   channelAccessToken: process.env.LINE_CHANNEL_ACCESS_TOKEN,
-//   channelSecret: process.env.LINE_CHANNEL_SECRET,
-// };
-// const client = new line.Client(lineConfig);
+// ══════ LINE CONFIG ══════
+const lineConfig = {
+  channelAccessToken: process.env.LINE_CHANNEL_ACCESS_TOKEN,
+  channelSecret: process.env.LINE_CHANNEL_SECRET,
+};
+const client = new line.Client(lineConfig);
 
 // ══════ CATEGORIES ══════
 const EXP_CATS = [
@@ -316,32 +316,77 @@ function makeListFlex(entries) {
   };
 }
 
-// ══════ MESSAGE HANDLER (ปิดไว้ก่อน - ใช้กับ LINE) ══════
-// async function handleMessage(event) {
-//   const { userId } = event.source;
-//   const text = event.message?.text?.trim();
-//   if (!text) return;
-//
-//   const lower = text.toLowerCase();
-//   const reply = msg => client.replyMessage(event.replyToken, msg);
-//   const replyText = (str) => reply({ type: 'text', text: str, quickReply: QUICK_REPLY });
-//
-//   // ... (LINE reply logic)
-// }
+// ══════ MESSAGE HANDLER ══════
+async function handleMessage(event) {
+  const { userId } = event.source;
+  const text = event.message?.text?.trim();
+  if (!text) return;
+
+  const lower = text.toLowerCase();
+  const reply = msg => client.replyMessage(event.replyToken, msg);
+  const replyText = (str) => reply({ type: 'text', text: str, quickReply: QUICK_REPLY });
+
+  // สรุป
+  if (lower === 'สรุป' || lower === 'summary') {
+    const s = await getMonthlySummary(userId);
+    return reply(makeSummaryFlex(s));
+  }
+
+  // รายการ
+  if (lower === 'รายการ' || lower === 'list') {
+    const data = await getUserData(userId);
+    const last5 = (data.entries || []).slice(-5).reverse();
+    if (!last5.length) return replyText('ยังไม่มีรายการ 🐼\nลองพิมพ์ เช่น "กาแฟ 45" หรือ "เงินเดือน 15000"');
+    return reply(makeListFlex(last5));
+  }
+
+  // ลบล่าสุด
+  if (lower === 'ลบ' || lower === 'ลบล่าสุด') {
+    const data = await getUserData(userId);
+    const entries = data.entries || [];
+    if (!entries.length) return replyText('ไม่มีรายการให้ลบ 🐼');
+    const removed = entries.pop();
+    await db.collection('dongNote').doc(userId).set({ ...data, entries });
+    return replyText(`🗑️ ลบแล้ว: ${removed.catIcon} ${removed.catName} ${fmt(removed.amount)} บาท`);
+  }
+
+  // ช่วยเหลือ
+  if (lower === 'ช่วยเหลือ' || lower === 'help' || lower === '?') {
+    return replyText(
+      '🐼 돈노트 Don Note วิธีใช้\n\n' +
+      '📝 บันทึกรายจ่าย:\nพิมพ์ เช่น "กาแฟ 45" "แท็กซี่ 120"\n\n' +
+      '💚 บันทึกรายรับ:\nพิมพ์ เช่น "เงินเดือน 15000" "รับ 500"\n\n' +
+      '📊 สรุป → พิมพ์ "สรุป"\n' +
+      '📋 รายการ → พิมพ์ "รายการ"\n' +
+      '🗑️ ลบ → พิมพ์ "ลบ"'
+    );
+  }
+
+  // บันทึกรายการ
+  const entry = parseEntry(text);
+  if (!entry) return replyText('ไม่เข้าใจ 🐼 ลองพิมพ์ เช่น "กาแฟ 45" หรือพิมพ์ "ช่วยเหลือ"');
+
+  entry.note = text;
+  entry.date = todayStr();
+  entry.id = Date.now().toString();
+
+  const data = await getUserData(userId);
+  const entries = [...(data.entries || []), entry];
+  await db.collection('dongNote').doc(userId).set({ ...data, entries, updatedAt: new Date().toISOString() });
+
+  const s = await getMonthlySummary(userId);
+  const balance = s.income - s.expense;
+  return reply(makeEntryFlex(entry, balance));
+}
 
 // ══════ FIREBASE CLOUD FUNCTION ══════
 const app = express();
 
-// LINE webhook ปิดไว้ก่อน
-// app.post('/', line.middleware(lineConfig), (req, res) => {
-//   res.sendStatus(200);
-//   (req.body.events || [])
-//     .filter(e => e.type === 'message' && e.message?.type === 'text')
-//     .forEach(e => handleMessage(e).catch(console.error));
-// });
-
-app.post('/', express.json(), (req, res) => {
+app.post('/', line.middleware(lineConfig), (req, res) => {
   res.sendStatus(200);
+  (req.body.events || [])
+    .filter(e => e.type === 'message' && e.message?.type === 'text')
+    .forEach(e => handleMessage(e).catch(console.error));
 });
 
 exports.webhook = functions
